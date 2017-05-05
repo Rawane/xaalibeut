@@ -87,7 +87,7 @@ public class RSAPrivateKeyUtility extends RSAUtility {
 			throw new RSAException("L'algorithme renseigné est inconnu");
 		} catch (InvalidKeySpecException e) {
 			throw new RSAException(
-					"Erreur lors de la génération de la private key");
+					"Erreur   lors de la génération de la private key");
 		}
 		return result;
 	}
