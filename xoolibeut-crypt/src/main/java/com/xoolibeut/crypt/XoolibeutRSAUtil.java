@@ -57,9 +57,7 @@ public class XoolibeutRSAUtil {
 			// Generation clés privée et publique
 			RSAPrivateKey priv = (RSAPrivateKey) keyPair.getPrivate();
 			RSAPublicKey pub = (RSAPublicKey) keyPair.getPublic();
-			// Conversion application
-			LOGGER.info(RSAPrivateKeyUtility.convertRSAPrivateKey(priv));
-			LOGGER.info(RSAPublicKeyUtility.convertRSAPublicKey(pub));
+			// Conversion application			
 			Files.write(Paths.get(rep + File.separator + "PrivateKey.pem"),
 					formatPrivateKey(RSAPrivateKeyUtility.convertRSAPrivateKey(priv)).getBytes());
 			Files.write(Paths.get(rep + File.separator + "PublicKey.pem"),
