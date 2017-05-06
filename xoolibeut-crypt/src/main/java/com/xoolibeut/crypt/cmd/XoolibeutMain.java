@@ -28,9 +28,11 @@ public class XoolibeutMain {
 	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutEnCryptS.class);
 
 	public static void main(String[] args) {
-
+		XoolibeutEnCryptS encrypt = new XoolibeutEnCryptS();
+		XoolibeutDeCryptS decrypt = new XoolibeutDeCryptS();
+		XoolibeutZipIn zipIn = new XoolibeutZipIn();
+		XoolibeutZipOut zipOut = new XoolibeutZipOut();
 		final Options options = configParameters();
-
 		final CommandLineParser parser = new DefaultParser();
 		try {
 			printHelp(args);
@@ -46,7 +48,8 @@ public class XoolibeutMain {
 				if (line.getOptionValue("dest") == null) {
 					printCommandeEchec(args);
 				}
-				XoolibeutRSAUtil.generateKey(line.getOptionValue("dest"));
+				XoolibeutRSAUtil.generateKey(line.getOptionValue("dest"),
+						Integer.parseInt(line.getOptionValue("rsasize")));
 			}
 
 			// encrypter un dossier
@@ -54,58 +57,63 @@ public class XoolibeutMain {
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
 				}
-
-				new XoolibeutEnCryptS().encryptDirectoryComplet(line.getOptionValue("asource"),
-						line.getOptionValue("bkey"));				
+				if (line.getOptionValue("rsasize") != null) {
+					encrypt.setMaxSizeByteEncrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8 - 11);
+				}
+				encrypt.encryptDirectoryComplet(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
 			// decrypter un dossier
 			if (line.hasOption("dd")) {
-				// dezipper le fichier
-				if (line.hasOption("zo")) {
-					new XoolibeutZipOut().unZipDirectory(line.getOptionValue("asource") + ".zip");
-					if (line.hasOption("z")) {
-						deleteFile(Paths.get(line.getOptionValue("asource")+ ".zip"));
-					}
-				}
+
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
 				}
-				new XoolibeutDeCryptS().decryptDirectoryComplet(line.getOptionValue("asource"),
-						line.getOptionValue("bkey"));
+				// dezipper le fichier
+				if (line.hasOption("zo")) {
+					zipOut.unZipDirectory(line.getOptionValue("asource") + ".zip");
+					if (line.hasOption("z")) {
+						deleteFile(Paths.get(line.getOptionValue("asource") + ".zip"));
+					}
+				}
+				if (line.getOptionValue("rsasize") != null) {
+					decrypt.setMaxSizeByteDecrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8);
+				}
+				decrypt.decryptDirectoryComplet(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
 			// encrypter un projet java
 			if (line.hasOption("ej")) {
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
-				}				
-				new XoolibeutEnCryptS().encryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"));
-				if (line.getOptionValue("asource") == null) {
-					printCommandeEchec(args);
+				}
+				if (line.getOptionValue("rsasize") != null) {
+					encrypt.setMaxSizeByteEncrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8 - 11);
+				}
+				if (line.getOptionValue("nocrypt") != null) {
+					encrypt.encryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"),
+							line.getOptionValue("nocrypt").split(";"));
+				} else {
+					encrypt.encryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 				}
 
 			}
 			// decrypter un projet java
 			if (line.hasOption("dj")) {
-				// dezipper le fichier
-				if (line.hasOption("zo")) {
-					new XoolibeutZipOut().unZipDirectory(line.getOptionValue("asource") + ".zip");
-					if (line.hasOption("z")) {
-						deleteFile(Paths.get(line.getOptionValue("asource")+ ".zip"));
-					}
-				}
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
 				}
-				new XoolibeutDeCryptS().decryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"));
+				if (line.getOptionValue("rsasize") != null) {
+					decrypt.setMaxSizeByteDecrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8);
+				}
+				decrypt.decryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
 			if (line.hasOption("zi")) {
 				if (line.getOptionValue("asource") == null) {
 					printCommandeEchec(args);
 				}
-				new XoolibeutZipIn().zipDirectory(line.getOptionValue("asource"));
+				zipIn.zipDirectory(line.getOptionValue("asource"));
 				if (line.hasOption("z")) {
 					deleteFile(Paths.get(line.getOptionValue("asource")));
 				}
@@ -137,7 +145,6 @@ public class XoolibeutMain {
 				.build();
 		final Option pathDossierOption = Option.builder("a").longOpt("asource")
 				.desc("Répertoire à crypter ou decrypter").argName("source").hasArg(true).required(false).build();
-
 		final Option keyFileOption = Option.builder("b").longOpt("bkey").desc("Clés privé ou public format PEM")
 				.argName("key").hasArg(true).required(false).build();
 		final Option zipInputFileOption = Option.builder("zi").longOpt("zipin").desc("zipper un repertoire")
@@ -146,6 +153,13 @@ public class XoolibeutMain {
 				.hasArg(false).required(false).build();
 		final Option suppDossierFileOption = Option.builder("z").longOpt("supp")
 				.desc("supprime le  repertoire après traitement,usage avec -a").hasArg(false).required(false).build();
+		final Option dossierNonCrypt = Option.builder("n").longOpt("nocrypt")
+				.desc("choisir un ou plusieurs dossier à ne pas crypter suivi ;,usage avec -a").argName("nocrypt")
+				.hasArg(true).required(false).build();
+		final Option rsaSizeKeyAlgo = Option.builder("s").longOpt("rsasize")
+				.desc("choisir la taille de la clé pour algo RSA 1024,2048").argName("rsasize").hasArg(true)
+				.required(false).build();
+
 		final Options options = new Options();
 		options.addOption(rsaGenKeyOption);
 		options.addOption(encryptProjetJava);
@@ -158,6 +172,8 @@ public class XoolibeutMain {
 		options.addOption(zipInputFileOption);
 		options.addOption(zipOuputFileOption);
 		options.addOption(suppDossierFileOption);
+		options.addOption(dossierNonCrypt);
+		options.addOption(rsaSizeKeyAlgo);
 		return options;
 	}
 
@@ -190,20 +206,21 @@ public class XoolibeutMain {
 		System.exit(0);
 
 	}
-	private static void deleteFile(Path directoryFile) {		
+
+	private static void deleteFile(Path directoryFile) {
 		try {
 			Files.walkFileTree(directoryFile, new SimpleFileVisitor<Path>() {
-			   @Override
-			   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-			       Files.delete(file);
-			       return FileVisitResult.CONTINUE;
-			   }
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.delete(file);
+					return FileVisitResult.CONTINUE;
+				}
 
-			   @Override
-			   public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-			       Files.delete(dir);
-			       return FileVisitResult.CONTINUE;
-			   }
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				}
 			});
 		} catch (IOException ioException) {
 			LOGGER.error("suppression fichier", ioException);

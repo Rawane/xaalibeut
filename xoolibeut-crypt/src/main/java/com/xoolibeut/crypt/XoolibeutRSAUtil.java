@@ -46,12 +46,11 @@ public class XoolibeutRSAUtil {
 
 	}
 
-	public static void generateKey(String rep) {
+	public static void generateKey(String rep,final int keyBitSize) {
 
 		try {
 			// Generation keyPair
-			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-			final int keyBitSize = 1024;
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");			
 			keyGen.initialize(keyBitSize);
 			KeyPair keyPair = keyGen.genKeyPair();
 			// Generation clés privée et publique
@@ -71,6 +70,6 @@ public class XoolibeutRSAUtil {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		generateKey("D:\\devs\\tmp\\xoolibeut");
+		//generateKey("xoolibeut",1024);
 	}
 }

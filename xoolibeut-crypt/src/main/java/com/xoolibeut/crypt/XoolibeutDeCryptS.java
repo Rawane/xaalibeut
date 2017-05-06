@@ -56,6 +56,26 @@ public class XoolibeutDeCryptS {
 		}
 	}
 
+	public int getMaxSizeByteDecrypt() {
+		return maxSizeByteDecrypt;
+	}
+
+	public void setMaxSizeByteDecrypt(int maxSizeByteDecrypt) {
+		this.maxSizeByteDecrypt = maxSizeByteDecrypt;
+	}
+
+	public XoolibeutDeCryptS(int rsaSize) {
+		try {
+			cipher = Cipher.getInstance("RSA");
+			this.maxSizeByteDecrypt = rsaSize / 8;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * @param args
 	 */

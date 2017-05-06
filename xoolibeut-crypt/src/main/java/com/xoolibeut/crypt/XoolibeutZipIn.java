@@ -22,6 +22,10 @@ public class XoolibeutZipIn {
 
 	}
 
+	/**
+	 * zipper un dossier
+	 * @param fileSource
+	 */
 	public void zipDirectory(String fileSource) {
 		byte[] buffer = new byte[1024];
 		try {
@@ -42,19 +46,16 @@ public class XoolibeutZipIn {
 				in.close();
 			}
 
-			zos.closeEntry();			
+			zos.closeEntry();
 			zos.close();
-
-			System.out.println("Done");
+			
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 	}
 
 	private void listAllFiles(final String fileSource, final List<String> listFile) throws IOException {
-
 		Consumer<Path> action = new Consumer<Path>() {
-
 			@Override
 			public void accept(Path path) {
 				if (path.toFile().isDirectory()) {
