@@ -46,6 +46,7 @@ public class XoolibeutEnCryptS {
 	private Cipher cipher;
 	private int countFileEncrpypt = 0;
 	private int countAllFileModeEnCrypt = 0;
+	private long totalSize = 0;
 
 	/**
 	 * 
@@ -115,8 +116,8 @@ public class XoolibeutEnCryptS {
 			RSAException {
 		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);
 		int maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
-		LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
-		if (Paths.get(inputFile).toFile().length() <= maxSizeByteEncrypt) {
+		//LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
+		if (Files.size(Paths.get(inputFile)) <= maxSizeByteEncrypt) {
 			this.encryptFile(Files.readAllBytes(Paths.get(inputFile)),
 					pathOutput, publicKey);
 		} else {
@@ -152,6 +153,7 @@ public class XoolibeutEnCryptS {
 		encryptProjetJ(pathDirectory, fileKeyPublic, noCryprFolder);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeEnCrypt);
 		LOGGER.info("nombre de fichier encrypté " + countFileEncrpypt);
+		LOGGER.info("Toal data crypté " + formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("Encrypt Durée en minutes  "
 				+ Duration.ofMillis(end).toMinutes());
@@ -163,6 +165,7 @@ public class XoolibeutEnCryptS {
 		encryptDirectoryWithDelete(pathDirectory, fileKeyPublic, null);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeEnCrypt);
 		LOGGER.info("nombre de fichier encrypté " + countFileEncrpypt);
+		LOGGER.info("Toal data crypté " + formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("Encrypt Durée en minutes  "
 				+ Duration.ofMillis(end).toMinutes());
@@ -171,59 +174,7 @@ public class XoolibeutEnCryptS {
 	public void encryptDirectoryWithDelete(String pathDirectory,
 			final String fileKeyPublic, final Predicate<Path> predicate)
 			throws IOException {
-		Stream<Path> pathStream;
-		if (predicate != null) {
-			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
-		} else {
-			Predicate<Path> predicateXool = new Predicate<Path>() {
-				@Override
-				public boolean test(Path path) {
-					countAllFileModeEnCrypt++;
-					return !path.toAbsolutePath().toString()
-							.contains(ADD_FILE_CRYPT_XOOL);
-				}
-
-			};
-			pathStream = Files.list(Paths.get(pathDirectory)).filter(
-					predicateXool);
-		}
-		Consumer<Path> action = new Consumer<Path>() {
-			@Override
-			public void accept(Path path) {
-				try {
-					String absolutePath = path.toAbsolutePath().toString();
-
-					if (path.toFile().isDirectory()) {
-						LOGGER.info("encryptDirectory répertpoire  "
-								+ absolutePath);
-						encryptDirectoryWithDelete(absolutePath, fileKeyPublic,
-								predicate);
-					} else {
-						LOGGER.info("encryptDirectory file name "
-								+ absolutePath);
-						int lastIndex = absolutePath.lastIndexOf(".");
-						String nomFileCrypte;
-						if (lastIndex > 0) {
-							nomFileCrypte = absolutePath
-									.substring(0, lastIndex)
-									+ ADD_FILE_CRYPT_XOOL
-									+ absolutePath.substring(lastIndex);
-						} else {
-							nomFileCrypte = absolutePath + ADD_FILE_CRYPT_XOOL;
-						}
-						encryptFile(absolutePath, nomFileCrypte, fileKeyPublic);
-						countFileEncrpypt++;
-						Files.delete(path);
-					}
-				} catch (Exception exception) {
-					exception.printStackTrace();
-				}
-
-			}
-
-		};
-
-		pathStream.forEach(action);
+		this.encryptDirectory(pathDirectory, fileKeyPublic, predicate, true);
 	}
 
 	/**
@@ -235,8 +186,8 @@ public class XoolibeutEnCryptS {
 	 * @throws IOException
 	 */
 	private void encryptDirectory(String pathDirectory,
-			final String fileKeyPublic, final Predicate<Path> predicate)
-			throws IOException {
+			final String fileKeyPublic, final Predicate<Path> predicate,
+			final boolean deleteFile) throws IOException {
 		Stream<Path> pathStream;
 		if (predicate != null) {
 			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
@@ -262,7 +213,7 @@ public class XoolibeutEnCryptS {
 						LOGGER.info("encryptDirectory répertpoire  "
 								+ pathAbsoluteFile);
 						encryptDirectory(pathAbsoluteFile, fileKeyPublic,
-								predicate);
+								predicate, deleteFile);
 					} else {
 						LOGGER.info("encryptDirectory file name "
 								+ path.toAbsolutePath().toString());
@@ -281,6 +232,10 @@ public class XoolibeutEnCryptS {
 						encryptFile(pathAbsoluteFile, nomFileCrypte,
 								fileKeyPublic);
 						countFileEncrpypt++;
+						totalSize = totalSize + Files.size(path);
+						if (deleteFile) {
+							Files.delete(path);
+						}
 					}
 				} catch (Exception exception) {
 					exception.printStackTrace();
@@ -318,7 +273,7 @@ public class XoolibeutEnCryptS {
 
 		};
 
-		encryptDirectory(pathDirectory, fileKeyPublic, predicate);
+		encryptDirectory(pathDirectory, fileKeyPublic, predicate, false);
 	}
 
 	private void encryptFile(byte[] input, FileOutputStream fos,
@@ -334,6 +289,20 @@ public class XoolibeutEnCryptS {
 		cipher.init(Cipher.ENCRYPT_MODE, key);
 		return Base64.getEncoder().encodeToString(
 				cipher.doFinal(msg.getBytes("UTF-8")));
+	}
+
+	private String formatTotalSize() {
+		if (totalSize < 1024) {
+			return totalSize + " Octet";
+		}
+		if (totalSize < 1024 * 1024) {
+			return (totalSize / (1024)) + " KO";
+		}
+		if (totalSize < 1024 * 1024 * 1024) {
+			return (totalSize / (1024 * 1024)) + " MO";
+		} else {
+			return (totalSize / (1024 * 1024)) + " GO";
+		}
 	}
 
 }

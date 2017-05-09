@@ -44,6 +44,7 @@ public class XoolibeutDeCryptS {
 	private Cipher cipher;
 	private int countFileDecrpypt = 0;
 	private int countAllFileModeDeCrypt = 0;
+	private long totalSize = 0;
 
 	/**
 	 * 
@@ -105,6 +106,7 @@ public class XoolibeutDeCryptS {
 		decryptProjetJ(pathDirectory, fileKeyPrivate);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeDeCrypt);
 		LOGGER.info("nombre de fichier décrypté " + countFileDecrpypt);
+		LOGGER.info("Toal data décrypté " + formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("decrypt Durée en minutes  "
 				+ Duration.ofMillis(end).toMinutes());
@@ -122,7 +124,7 @@ public class XoolibeutDeCryptS {
 			}
 
 		};
-		decryptDirectory(pathDirectory, fileKeyPrivate, predicate);
+		decryptDirectory(pathDirectory, fileKeyPrivate, predicate, false);
 	}
 
 	public void decryptDirectoryComplet(String pathDirectory,
@@ -141,6 +143,7 @@ public class XoolibeutDeCryptS {
 		decryptDirectoryWithDelete(pathDirectory, fileKeyPrivate, predicate);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeDeCrypt);
 		LOGGER.info("nombre de fichier décrypté " + countFileDecrpypt);
+		LOGGER.info("Toal data décrypté " + formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("decrypt Durée en minutes  "
 				+ Duration.ofMillis(end).toMinutes());
@@ -149,51 +152,12 @@ public class XoolibeutDeCryptS {
 	public void decryptDirectoryWithDelete(String pathDirectory,
 			final String fileKeyPrivate, final Predicate<Path> predicate)
 			throws IOException {
-		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
-				predicate);
-		if (predicate != null) {
-			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
-		} else {
-			pathStream = Files.list(Paths.get(pathDirectory));
-		}
-
-		Consumer<Path> actionDecrypt = new Consumer<Path>() {
-			@Override
-			public void accept(Path path) {
-				try {
-					LOGGER.info(" decryptProjetJava file name "
-							+ path.toAbsolutePath().toString());
-					if (path.toFile().isDirectory()) {
-						LOGGER.info(" decryptProjetJava répertoire name "
-								+ path.toAbsolutePath().toString());
-						decryptDirectoryWithDelete(path.toAbsolutePath()
-								.toString(), fileKeyPrivate, predicate);
-					} else {
-						LOGGER.info(" decryptProjetJava file name "
-								+ path.toAbsolutePath().toString());
-
-						decryptFile(
-								path.toAbsolutePath().toString(),
-								path.toAbsolutePath().toString()
-										.replace(ADD_FILE_CRYPT_XOOL, ""),
-								fileKeyPrivate);
-						countFileDecrpypt++;
-						Files.delete(path);
-					}
-				} catch (Exception exception) {
-					exception.printStackTrace();
-				}
-
-			}
-
-		};
-
-		pathStream.forEach(actionDecrypt);
+		this.decryptDirectory(pathDirectory, fileKeyPrivate, predicate, true);
 	}
 
 	public void decryptDirectory(String pathDirectory,
-			final String fileKeyPrivate, final Predicate<Path> predicate)
-			throws IOException {
+			final String fileKeyPrivate, final Predicate<Path> predicate,
+			final boolean deleteFile) throws IOException {
 		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
 				predicate);
 		if (predicate != null) {
@@ -212,7 +176,7 @@ public class XoolibeutDeCryptS {
 						LOGGER.info(" decryptProjetJava répertoire name "
 								+ path.toAbsolutePath().toString());
 						decryptDirectory(path.toAbsolutePath().toString(),
-								fileKeyPrivate, predicate);
+								fileKeyPrivate, predicate, deleteFile);
 					} else {
 						LOGGER.info(" decryptProjetJava file name "
 								+ path.toAbsolutePath().toString());
@@ -222,6 +186,10 @@ public class XoolibeutDeCryptS {
 								path.toAbsolutePath().toString()
 										.replace(ADD_FILE_CRYPT_XOOL, ""),
 								fileKeyPrivate);
+						totalSize = totalSize + Files.size(path);
+						if (deleteFile) {
+							Files.delete(path);
+						}
 					}
 				} catch (Exception exception) {
 					exception.printStackTrace();
@@ -250,8 +218,8 @@ public class XoolibeutDeCryptS {
 			RSAException {
 		RSAPrivateKey privateKey = getPrivateKeyFromFile(fileKeyPrive);
 		int maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
-		LOGGER.info("size clé privé " + privateKey.getModulus().bitLength());
-		if (Paths.get(inputFile).toFile().length() <= maxSizeByteDecrypt) {
+		// LOGGER.info("size clé privé " + privateKey.getModulus().bitLength());
+		if (Files.size(Paths.get(inputFile)) <= maxSizeByteDecrypt) {
 			this.decryptFile(Files.readAllBytes(Paths.get(inputFile)),
 					pathOutput, privateKey);
 		} else {
@@ -299,4 +267,17 @@ public class XoolibeutDeCryptS {
 				"UTF-8");
 	}
 
+	private String formatTotalSize() {
+		if (totalSize < 1024) {
+			return totalSize + " Octet";
+		}
+		if (totalSize < 1024 * 1024) {
+			return (totalSize / (1024)) + " KO";
+		}
+		if (totalSize < 1024 * 1024 * 1024) {
+			return (totalSize / (1024 * 1024)) + " MO";
+		} else {
+			return (totalSize / (1024 * 1024)) + " GO";
+		}
+	}
 }
