@@ -156,7 +156,7 @@ public class XoolibeutEnCryptS {
 		LOGGER.info("Toal data crypté " + formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("Encrypt Durée en minutes  "
-				+ Duration.ofMillis(end).toMinutes());
+				+ Duration.ofMillis(end).toMinutes());		
 	}
 
 	public void encryptDirectoryComplet(String pathDirectory,
@@ -197,7 +197,7 @@ public class XoolibeutEnCryptS {
 				public boolean test(Path path) {
 					countAllFileModeEnCrypt++;
 					return !path.toAbsolutePath().toString()
-							.endsWith(ADD_FILE_CRYPT_XOOL);
+							.contains(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
