@@ -35,9 +35,13 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class XoolibeutDeCryptS {
-	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutDeCryptS.class);
+	/**
+	 * 
+	 */
+	private static final String ADD_FILE_CRYPT_XOOL = "_xool";
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(XoolibeutDeCryptS.class);
 	private Cipher cipher;
-
 	private int countFileDecrpypt = 0;
 	private int countAllFileModeDeCrypt = 0;
 
@@ -55,11 +59,9 @@ public class XoolibeutDeCryptS {
 		}
 	}
 
-	
-
 	public XoolibeutDeCryptS(int rsaSize) {
 		try {
-			cipher = Cipher.getInstance("RSA");		
+			cipher = Cipher.getInstance("RSA");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
@@ -68,26 +70,13 @@ public class XoolibeutDeCryptS {
 		}
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		XoolibeutDeCryptS xool = new XoolibeutDeCryptS();
-		try {
-			xool.decryptProjetJava("D:\\devs\\tmp\\xoolibeut\\test_java", "D:\\devs\\tmp\\xoolibeut\\PrivateKey.pem");
-			// xool.decryptFile("D:\\devs\\tmp\\xoolibeut\\test_crypt",
-			// "D:\\devs\\tmp\\xoolibeut\\test_2.txt",
-			// "D:\\devs\\tmp\\xoolibeut\\PrivateKey.pem");
-		} catch (Exception exception) {
-			LOGGER.error("erreur", exception);
-		}
-	}
-
-	private RSAPrivateKey getPrivateKeyFromFile(String fileNameKey) throws RSAException {
+	private RSAPrivateKey getPrivateKeyFromFile(String fileNameKey)
+			throws RSAException {
 		RSAPrivateKey privateKey = null;
 		try {
 			privateKey = RSAPrivateKeyUtility
-					.convertToRSAPrivateKey(new String(Files.readAllBytes(Paths.get(fileNameKey))));
+					.convertToRSAPrivateKey(new String(Files.readAllBytes(Paths
+							.get(fileNameKey))));
 		} catch (IOException exception) {
 
 			exception.printStackTrace();
@@ -104,39 +93,48 @@ public class XoolibeutDeCryptS {
 		fos.close();
 	}
 
-	public void writeTempToFile(FileOutputStream fos, byte[] key) throws IOException {
+	public void writeTempToFile(FileOutputStream fos, byte[] key)
+			throws IOException {
 		fos.write(key);
 
 	}
 
-	public void decryptProjetJava(String pathDirectory, final String fileKeyPrivate) throws IOException {
+	public void decryptProjetJava(String pathDirectory,
+			final String fileKeyPrivate) throws IOException {
 		long start = System.currentTimeMillis();
 		decryptProjetJ(pathDirectory, fileKeyPrivate);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeDeCrypt);
 		LOGGER.info("nombre de fichier décrypté " + countFileDecrpypt);
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("decrypt Durée en minutes  " + Duration.ofMillis(end).toMinutes());
+		LOGGER.info("decrypt Durée en minutes  "
+				+ Duration.ofMillis(end).toMinutes());
 	}
 
-	public void decryptProjetJ(String pathDirectory, final String fileKeyPrivate) throws IOException {
+	public void decryptProjetJ(String pathDirectory, final String fileKeyPrivate)
+			throws IOException {
 		Predicate<Path> predicate = new Predicate<Path>() {
 			@Override
 			public boolean test(Path path) {
 				countAllFileModeDeCrypt++;
-				return path.toFile().isDirectory() || path.toAbsolutePath().toString().endsWith("_xool");
+				return path.toFile().isDirectory()
+						|| path.toAbsolutePath().toString()
+								.contains(ADD_FILE_CRYPT_XOOL);
 			}
 
 		};
 		decryptDirectory(pathDirectory, fileKeyPrivate, predicate);
 	}
 
-	public void decryptDirectoryComplet(String pathDirectory, final String fileKeyPrivate) throws IOException {
+	public void decryptDirectoryComplet(String pathDirectory,
+			final String fileKeyPrivate) throws IOException {
 		long start = System.currentTimeMillis();
 		Predicate<Path> predicate = new Predicate<Path>() {
 			@Override
 			public boolean test(Path path) {
 				countAllFileModeDeCrypt++;
-				return path.toFile().isDirectory() || path.toAbsolutePath().toString().endsWith("_xool");
+				return path.toFile().isDirectory()
+						|| path.toAbsolutePath().toString()
+								.endsWith(ADD_FILE_CRYPT_XOOL);
 			}
 
 		};
@@ -144,12 +142,15 @@ public class XoolibeutDeCryptS {
 		LOGGER.info("nombre de fichier traité " + countAllFileModeDeCrypt);
 		LOGGER.info("nombre de fichier décrypté " + countFileDecrpypt);
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("decrypt Durée en minutes  " + Duration.ofMillis(end).toMinutes());
+		LOGGER.info("decrypt Durée en minutes  "
+				+ Duration.ofMillis(end).toMinutes());
 	}
 
-	public void decryptDirectoryWithDelete(String pathDirectory, final String fileKeyPrivate,
-			final Predicate<Path> predicate) throws IOException {
-		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
+	public void decryptDirectoryWithDelete(String pathDirectory,
+			final String fileKeyPrivate, final Predicate<Path> predicate)
+			throws IOException {
+		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
+				predicate);
 		if (predicate != null) {
 			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
 		} else {
@@ -160,15 +161,22 @@ public class XoolibeutDeCryptS {
 			@Override
 			public void accept(Path path) {
 				try {
-					LOGGER.info(" decryptProjetJava file name " + path.toAbsolutePath().toString());
+					LOGGER.info(" decryptProjetJava file name "
+							+ path.toAbsolutePath().toString());
 					if (path.toFile().isDirectory()) {
-						LOGGER.info(" decryptProjetJava répertoire name " + path.toAbsolutePath().toString());
-						decryptDirectoryWithDelete(path.toAbsolutePath().toString(), fileKeyPrivate, predicate);
+						LOGGER.info(" decryptProjetJava répertoire name "
+								+ path.toAbsolutePath().toString());
+						decryptDirectoryWithDelete(path.toAbsolutePath()
+								.toString(), fileKeyPrivate, predicate);
 					} else {
-						LOGGER.info(" decryptProjetJava file name " + path.toAbsolutePath().toString());
+						LOGGER.info(" decryptProjetJava file name "
+								+ path.toAbsolutePath().toString());
 
-						decryptFile(path.toAbsolutePath().toString(),
-								path.toAbsolutePath().toString().replace("_xool", ""), fileKeyPrivate);
+						decryptFile(
+								path.toAbsolutePath().toString(),
+								path.toAbsolutePath().toString()
+										.replace(ADD_FILE_CRYPT_XOOL, ""),
+								fileKeyPrivate);
 						countFileDecrpypt++;
 						Files.delete(path);
 					}
@@ -183,9 +191,11 @@ public class XoolibeutDeCryptS {
 		pathStream.forEach(actionDecrypt);
 	}
 
-	public void decryptDirectory(String pathDirectory, final String fileKeyPrivate, final Predicate<Path> predicate)
+	public void decryptDirectory(String pathDirectory,
+			final String fileKeyPrivate, final Predicate<Path> predicate)
 			throws IOException {
-		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
+		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
+				predicate);
 		if (predicate != null) {
 			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
 		} else {
@@ -196,15 +206,22 @@ public class XoolibeutDeCryptS {
 			@Override
 			public void accept(Path path) {
 				try {
-					LOGGER.info(" decryptProjetJava file name " + path.toAbsolutePath().toString());
+					LOGGER.info(" decryptProjetJava file name "
+							+ path.toAbsolutePath().toString());
 					if (path.toFile().isDirectory()) {
-						LOGGER.info(" decryptProjetJava répertoire name " + path.toAbsolutePath().toString());
-						decryptDirectory(path.toAbsolutePath().toString(), fileKeyPrivate, predicate);
+						LOGGER.info(" decryptProjetJava répertoire name "
+								+ path.toAbsolutePath().toString());
+						decryptDirectory(path.toAbsolutePath().toString(),
+								fileKeyPrivate, predicate);
 					} else {
-						LOGGER.info(" decryptProjetJava file name " + path.toAbsolutePath().toString());
+						LOGGER.info(" decryptProjetJava file name "
+								+ path.toAbsolutePath().toString());
 						countFileDecrpypt++;
-						decryptFile(path.toAbsolutePath().toString(),
-								path.toAbsolutePath().toString().replace("_xool", ""), fileKeyPrivate);
+						decryptFile(
+								path.toAbsolutePath().toString(),
+								path.toAbsolutePath().toString()
+										.replace(ADD_FILE_CRYPT_XOOL, ""),
+								fileKeyPrivate);
 					}
 				} catch (Exception exception) {
 					exception.printStackTrace();
@@ -228,20 +245,24 @@ public class XoolibeutDeCryptS {
 		this.decryptFile(input, pathOutput, getPrivateKeyFromFile(fileKeyPrive));
 	}
 
-	public void decryptFile(String inputFile, String pathOutput, String fileKeyPrive)
-			throws IOException, GeneralSecurityException, RSAException {
+	public void decryptFile(String inputFile, String pathOutput,
+			String fileKeyPrive) throws IOException, GeneralSecurityException,
+			RSAException {
 		RSAPrivateKey privateKey = getPrivateKeyFromFile(fileKeyPrive);
-		int maxSizeByteDecrypt = privateKey.getModulus().bitCount() / 8;
+		int maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
+		LOGGER.info("size clé privé " + privateKey.getModulus().bitLength());
 		if (Paths.get(inputFile).toFile().length() <= maxSizeByteDecrypt) {
-			this.decryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, privateKey);
+			this.decryptFile(Files.readAllBytes(Paths.get(inputFile)),
+					pathOutput, privateKey);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
 			FileOutputStream fos = new FileOutputStream(fileOuput);
 			byte[] input = new byte[maxSizeByteDecrypt];
-			FileInputStream fileInputStream = new FileInputStream(Paths.get(inputFile).toFile());
+			FileInputStream fileInputStream = new FileInputStream(Paths.get(
+					inputFile).toFile());
 			while (fileInputStream.read(input) > 0) {
-				this.decryptFile(input, fos,privateKey );
+				this.decryptFile(input, fos, privateKey);
 			}
 			int nbRead = 0;
 			while ((nbRead = fileInputStream.read(input)) > 0) {
@@ -252,7 +273,7 @@ public class XoolibeutDeCryptS {
 					}
 					this.decryptFile(inputRead, fos, privateKey);
 				} else {
-					this.decryptFile(input, fos,privateKey);
+					this.decryptFile(input, fos, privateKey);
 				}
 
 			}
@@ -262,16 +283,20 @@ public class XoolibeutDeCryptS {
 
 	}
 
-	public void decryptFile(byte[] input, FileOutputStream fos, PrivateKey privateKey)
-			throws IOException, GeneralSecurityException, RSAException {
+	public void decryptFile(byte[] input, FileOutputStream fos,
+			PrivateKey privateKey) throws IOException,
+			GeneralSecurityException, RSAException {
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 		writeTempToFile(fos, cipher.doFinal(input));
 	}
 
-	public String decryptText(String msg, PrivateKey key) throws InvalidKeyException, UnsupportedEncodingException,
-			IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+	public String decryptText(String msg, PrivateKey key)
+			throws InvalidKeyException, UnsupportedEncodingException,
+			IllegalBlockSizeException, BadPaddingException,
+			NoSuchAlgorithmException, NoSuchPaddingException {
 		cipher.init(Cipher.DECRYPT_MODE, key);
-		return new String(cipher.doFinal(Base64.getDecoder().decode(msg)), "UTF-8");
+		return new String(cipher.doFinal(Base64.getDecoder().decode(msg)),
+				"UTF-8");
 	}
 
 }

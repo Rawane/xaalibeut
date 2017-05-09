@@ -37,7 +37,12 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class XoolibeutEnCryptS {
-	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutEnCryptS.class);
+	/**
+	 * 
+	 */
+	private static final String ADD_FILE_CRYPT_XOOL = "_xool";
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(XoolibeutEnCryptS.class);
 	private Cipher cipher;
 	private int countFileEncrpypt = 0;
 	private int countAllFileModeEnCrypt = 0;
@@ -54,19 +59,6 @@ public class XoolibeutEnCryptS {
 
 			e.printStackTrace();
 		}
-	}	
-
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		XoolibeutEnCryptS xool = new XoolibeutEnCryptS();
-		try {
-			xool.encryptProjetJava("D:\\devs\\tmp\\xoolibeut\\test_java", "D:\\devs\\tmp\\xoolibeut\\PublicKey.pem");
-		} catch (Exception exception) {
-			LOGGER.error("erreur", exception);
-		}
 	}
 
 	/**
@@ -77,11 +69,12 @@ public class XoolibeutEnCryptS {
 	 * @return
 	 * @throws RSAException
 	 */
-	public  RSAPublicKey getPublicKeyFromFile(String fileNameKey) throws RSAException {
+	public static RSAPublicKey getPublicKeyFromFile(String fileNameKey)
+			throws RSAException {
 		RSAPublicKey publicKey = null;
 		try {
-			publicKey = RSAPublicKeyUtility
-					.convertToRSAPublicKey(new String(Files.readAllBytes(Paths.get(fileNameKey))));
+			publicKey = RSAPublicKeyUtility.convertToRSAPublicKey(new String(
+					Files.readAllBytes(Paths.get(fileNameKey))));
 		} catch (IOException exception) {
 
 			exception.printStackTrace();
@@ -98,7 +91,8 @@ public class XoolibeutEnCryptS {
 		fos.close();
 	}
 
-	public void writeTempToFile(FileOutputStream fos, byte[] key) throws IOException {
+	public void writeTempToFile(FileOutputStream fos, byte[] key)
+			throws IOException {
 		fos.write(key);
 
 	}
@@ -110,24 +104,28 @@ public class XoolibeutEnCryptS {
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
 
-	public void encryptFile(byte[] input, String pathOutput, String fileKeyPublic)
-			throws IOException, GeneralSecurityException, RSAException {
+	public void encryptFile(byte[] input, String pathOutput,
+			String fileKeyPublic) throws IOException, GeneralSecurityException,
+			RSAException {
 		this.encryptFile(input, pathOutput, getPublicKeyFromFile(fileKeyPublic));
 	}
 
-	public void encryptFile(String inputFile, String pathOutput, String fileKeyPublic)
-			throws IOException, GeneralSecurityException, RSAException {
-		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);
-		
-		int maxSizeByteEncrypt = publicKey.getModulus().bitCount() / 8 - 11;
+	public void encryptFile(String inputFile, String pathOutput,
+			String fileKeyPublic) throws IOException, GeneralSecurityException,
+			RSAException {
+		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);		
+		int maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
+		LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
 		if (Paths.get(inputFile).toFile().length() <= maxSizeByteEncrypt) {
-			this.encryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, publicKey);
+			this.encryptFile(Files.readAllBytes(Paths.get(inputFile)),
+					pathOutput, publicKey);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
 			FileOutputStream fos = new FileOutputStream(fileOuput);
 			byte[] input = new byte[maxSizeByteEncrypt];
-			FileInputStream fileInputStream = new FileInputStream(Paths.get(inputFile).toFile());
+			FileInputStream fileInputStream = new FileInputStream(Paths.get(
+					inputFile).toFile());
 			int nbRead = 0;
 			while ((nbRead = fileInputStream.read(input)) > 0) {
 				byte[] inputRead = new byte[nbRead];
@@ -135,7 +133,7 @@ public class XoolibeutEnCryptS {
 					for (int i = 0; i < nbRead; i++) {
 						inputRead[i] = input[i];
 					}
-					this.encryptFile(inputRead, fos,publicKey);
+					this.encryptFile(inputRead, fos, publicKey);
 				} else {
 					this.encryptFile(input, fos, publicKey);
 				}
@@ -147,27 +145,32 @@ public class XoolibeutEnCryptS {
 
 	}
 
-	public void encryptProjetJava(String pathDirectory, final String fileKeyPublic, String... noCryprFolder)
+	public void encryptProjetJava(String pathDirectory,
+			final String fileKeyPublic, String... noCryprFolder)
 			throws IOException {
 		long start = System.currentTimeMillis();
-		encryptProjetJ(pathDirectory, fileKeyPublic,noCryprFolder);
+		encryptProjetJ(pathDirectory, fileKeyPublic, noCryprFolder);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeEnCrypt);
 		LOGGER.info("nombre de fichier encrypté " + countFileEncrpypt);
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("Encrypt Durée en minutes  " + Duration.ofMillis(end).toMinutes());
+		LOGGER.info("Encrypt Durée en minutes  "
+				+ Duration.ofMillis(end).toMinutes());
 	}
 
-	public void encryptDirectoryComplet(String pathDirectory, final String fileKeyPublic) throws IOException {
+	public void encryptDirectoryComplet(String pathDirectory,
+			final String fileKeyPublic) throws IOException {
 		long start = System.currentTimeMillis();
 		encryptDirectoryWithDelete(pathDirectory, fileKeyPublic, null);
 		LOGGER.info("nombre de fichier traité " + countAllFileModeEnCrypt);
 		LOGGER.info("nombre de fichier encrypté " + countFileEncrpypt);
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("Encrypt Durée en minutes  " + Duration.ofMillis(end).toMinutes());
+		LOGGER.info("Encrypt Durée en minutes  "
+				+ Duration.ofMillis(end).toMinutes());
 	}
 
-	public void encryptDirectoryWithDelete(String pathDirectory, final String fileKeyPublic,
-			final Predicate<Path> predicate) throws IOException {
+	public void encryptDirectoryWithDelete(String pathDirectory,
+			final String fileKeyPublic, final Predicate<Path> predicate)
+			throws IOException {
 		Stream<Path> pathStream;
 		if (predicate != null) {
 			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
@@ -176,11 +179,13 @@ public class XoolibeutEnCryptS {
 				@Override
 				public boolean test(Path path) {
 					countAllFileModeEnCrypt++;
-					return !path.toAbsolutePath().toString().endsWith("_xool");
+					return !path.toAbsolutePath().toString()
+							.endsWith(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
-			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicateXool);
+			pathStream = Files.list(Paths.get(pathDirectory)).filter(
+					predicateXool);
 		}
 		Consumer<Path> action = new Consumer<Path>() {
 			@Override
@@ -188,12 +193,16 @@ public class XoolibeutEnCryptS {
 				try {
 
 					if (path.toFile().isDirectory()) {
-						LOGGER.info("encryptDirectory répertpoire  " + path.toAbsolutePath().toString());
-						encryptDirectoryWithDelete(path.toAbsolutePath().toString(), fileKeyPublic, predicate);
+						LOGGER.info("encryptDirectory répertpoire  "
+								+ path.toAbsolutePath().toString());
+						encryptDirectoryWithDelete(path.toAbsolutePath()
+								.toString(), fileKeyPublic, predicate);
 					} else {
-						LOGGER.info("encryptDirectory file name " + path.toAbsolutePath().toString());
-						encryptFile(path.toAbsolutePath().toString(), path.toAbsolutePath().toString() + "_xool",
-								fileKeyPublic);
+						LOGGER.info("encryptDirectory file name "
+								+ path.toAbsolutePath().toString());
+						encryptFile(path.toAbsolutePath().toString(), path
+								.toAbsolutePath().toString()
+								+ ADD_FILE_CRYPT_XOOL, fileKeyPublic);
 						countFileEncrpypt++;
 						Files.delete(path);
 					}
@@ -216,7 +225,8 @@ public class XoolibeutEnCryptS {
 	 * @param predicate
 	 * @throws IOException
 	 */
-	private void encryptDirectory(String pathDirectory, final String fileKeyPublic, final Predicate<Path> predicate)
+	private void encryptDirectory(String pathDirectory,
+			final String fileKeyPublic, final Predicate<Path> predicate)
 			throws IOException {
 		Stream<Path> pathStream;
 		if (predicate != null) {
@@ -226,23 +236,34 @@ public class XoolibeutEnCryptS {
 				@Override
 				public boolean test(Path path) {
 					countAllFileModeEnCrypt++;
-					return !path.toAbsolutePath().toString().endsWith("_xool");
+					return !path.toAbsolutePath().toString()
+							.endsWith(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
-			pathStream = Files.list(Paths.get(pathDirectory)).filter(predicateXool);
+			pathStream = Files.list(Paths.get(pathDirectory)).filter(
+					predicateXool);
 		}
 		Consumer<Path> action = new Consumer<Path>() {
 			@Override
 			public void accept(Path path) {
 				try {
-
+					String pathAbsoluteFile = path.toAbsolutePath().toString();
 					if (path.toFile().isDirectory()) {
-						LOGGER.info("encryptDirectory répertpoire  " + path.toAbsolutePath().toString());
-						encryptDirectory(path.toAbsolutePath().toString(), fileKeyPublic, predicate);
+						LOGGER.info("encryptDirectory répertpoire  "
+								+ pathAbsoluteFile);
+						encryptDirectory(pathAbsoluteFile, fileKeyPublic,
+								predicate);
 					} else {
-						LOGGER.info("encryptDirectory file name " + path.toAbsolutePath().toString());
-						encryptFile(path.toAbsolutePath().toString(), path.toAbsolutePath().toString() + "_xool",
+						LOGGER.info("encryptDirectory file name "
+								+ path.toAbsolutePath().toString());
+
+						int lastIndex = pathAbsoluteFile.lastIndexOf(".");
+						encryptFile(
+								pathAbsoluteFile,
+								pathAbsoluteFile.substring(0, lastIndex)
+										+ ADD_FILE_CRYPT_XOOL
+										+ pathAbsoluteFile.substring(lastIndex),
 								fileKeyPublic);
 						countFileEncrpypt++;
 					}
@@ -257,23 +278,27 @@ public class XoolibeutEnCryptS {
 		pathStream.forEach(action);
 	}
 
-	private void encryptProjetJ(String pathDirectory, final String fileKeyPublic, String... noCryprFolder)
+	private void encryptProjetJ(String pathDirectory,
+			final String fileKeyPublic, String... noCryprFolder)
 			throws IOException {
 		final List<String> listNoCrypt = Arrays.asList(noCryprFolder);
 		Predicate<Path> predicate = new Predicate<Path>() {
 			@Override
 			public boolean test(Path path) {
 				countAllFileModeEnCrypt++;
-				return (path.toFile().isDirectory() && !listNoCrypt.contains(path.getFileName().toString()))
-						|| path.toAbsolutePath().toString().endsWith(".java")
-						|| path.toAbsolutePath().toString().endsWith(".properties")
-						|| path.toAbsolutePath().toString().endsWith(".css")
-						|| path.toAbsolutePath().toString().endsWith(".js")
-						|| path.toAbsolutePath().toString().endsWith(".html")
-						|| path.toAbsolutePath().toString().endsWith(".sql")
-						|| path.toAbsolutePath().toString().endsWith(".xml")
-						|| path.toAbsolutePath().toString().endsWith(".png")
-						|| path.toAbsolutePath().toString().endsWith(".jpg");
+				String absolutePath = path.toAbsolutePath().toString();
+				return !absolutePath.contains(ADD_FILE_CRYPT_XOOL)
+						&& ((path.toFile().isDirectory() && !listNoCrypt
+								.contains(path.getFileName().toString()))
+						|| (absolutePath.endsWith(".java")
+								|| absolutePath.endsWith(".properties")
+								|| absolutePath.endsWith(".css")
+								|| absolutePath.endsWith(".js")
+								|| absolutePath.endsWith(".html")
+								|| absolutePath.endsWith(".sql")
+								|| absolutePath.endsWith(".xml")
+								|| absolutePath.endsWith(".png") || absolutePath
+									.endsWith(".jpg")));
 			}
 
 		};
@@ -281,16 +306,19 @@ public class XoolibeutEnCryptS {
 		encryptDirectory(pathDirectory, fileKeyPublic, predicate);
 	}
 
-	private void encryptFile(byte[] input, FileOutputStream fos, PublicKey publicKey)
-			throws IOException, GeneralSecurityException {
+	private void encryptFile(byte[] input, FileOutputStream fos,
+			PublicKey publicKey) throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 		writeTempToFile(fos, cipher.doFinal(input));
 	}
 
-	public String encryptText(String msg, PublicKey key) throws NoSuchAlgorithmException, NoSuchPaddingException,
-			UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+	public String encryptText(String msg, PublicKey key)
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			UnsupportedEncodingException, IllegalBlockSizeException,
+			BadPaddingException, InvalidKeyException {
 		cipher.init(Cipher.ENCRYPT_MODE, key);
-		return Base64.getEncoder().encodeToString(cipher.doFinal(msg.getBytes("UTF-8")));
+		return Base64.getEncoder().encodeToString(
+				cipher.doFinal(msg.getBytes("UTF-8")));
 	}
 
 }

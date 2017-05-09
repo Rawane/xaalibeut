@@ -46,21 +46,29 @@ public class XoolibeutRSAUtil {
 
 	}
 
-	public static void generateKey(String rep,final int keyBitSize) {
+	public static void generateKey(String rep, final int keyBitSize) {
 
 		try {
+			LOGGER.info("généré une clés de taille " + keyBitSize);
 			// Generation keyPair
-			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");			
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 			keyGen.initialize(keyBitSize);
 			KeyPair keyPair = keyGen.genKeyPair();
 			// Generation clés privée et publique
 			RSAPrivateKey priv = (RSAPrivateKey) keyPair.getPrivate();
 			RSAPublicKey pub = (RSAPublicKey) keyPair.getPublic();
-			// Conversion application			
-			Files.write(Paths.get(rep + File.separator + "PrivateKey.pem"),
-					formatPrivateKey(RSAPrivateKeyUtility.convertRSAPrivateKey(priv)).getBytes());
-			Files.write(Paths.get(rep + File.separator + "PublicKey.pem"),
-					formatPublicKey(RSAPublicKeyUtility.convertRSAPublicKey(pub)).getBytes());
+			LOGGER.info("clés généré avec la taille " + priv.getModulus().bitLength()+" "+priv.getModulus().bitCount());
+			// Conversion application
+			Files.write(
+					Paths.get(rep + File.separator + "PrivateKey.pem"),
+					formatPrivateKey(
+							RSAPrivateKeyUtility.convertRSAPrivateKey(priv))
+							.getBytes());
+			Files.write(
+					Paths.get(rep + File.separator + "PublicKey.pem"),
+					formatPublicKey(
+							RSAPublicKeyUtility.convertRSAPublicKey(pub))
+							.getBytes());
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
@@ -70,6 +78,6 @@ public class XoolibeutRSAUtil {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//generateKey("xoolibeut",1024);
+		// generateKey("xoolibeut",1024);
 	}
 }
