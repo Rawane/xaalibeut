@@ -38,7 +38,6 @@ public class XoolibeutDeCryptS {
 	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutDeCryptS.class);
 	private Cipher cipher;
 
-	private int maxSizeByteDecrypt = 128;
 	private int countFileDecrpypt = 0;
 	private int countAllFileModeDeCrypt = 0;
 
@@ -56,18 +55,11 @@ public class XoolibeutDeCryptS {
 		}
 	}
 
-	public int getMaxSizeByteDecrypt() {
-		return maxSizeByteDecrypt;
-	}
-
-	public void setMaxSizeByteDecrypt(int maxSizeByteDecrypt) {
-		this.maxSizeByteDecrypt = maxSizeByteDecrypt;
-	}
+	
 
 	public XoolibeutDeCryptS(int rsaSize) {
 		try {
-			cipher = Cipher.getInstance("RSA");
-			this.maxSizeByteDecrypt = rsaSize / 8;
+			cipher = Cipher.getInstance("RSA");		
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
@@ -238,8 +230,10 @@ public class XoolibeutDeCryptS {
 
 	public void decryptFile(String inputFile, String pathOutput, String fileKeyPrive)
 			throws IOException, GeneralSecurityException, RSAException {
+		RSAPrivateKey privateKey = getPrivateKeyFromFile(fileKeyPrive);
+		int maxSizeByteDecrypt = privateKey.getModulus().bitCount() / 8;
 		if (Paths.get(inputFile).toFile().length() <= maxSizeByteDecrypt) {
-			this.decryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, fileKeyPrive);
+			this.decryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, privateKey);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
@@ -247,7 +241,7 @@ public class XoolibeutDeCryptS {
 			byte[] input = new byte[maxSizeByteDecrypt];
 			FileInputStream fileInputStream = new FileInputStream(Paths.get(inputFile).toFile());
 			while (fileInputStream.read(input) > 0) {
-				this.decryptFile(input, fos, getPrivateKeyFromFile(fileKeyPrive));
+				this.decryptFile(input, fos,privateKey );
 			}
 			int nbRead = 0;
 			while ((nbRead = fileInputStream.read(input)) > 0) {
@@ -256,9 +250,9 @@ public class XoolibeutDeCryptS {
 					for (int i = 0; i < nbRead; i++) {
 						inputRead[i] = input[i];
 					}
-					this.decryptFile(inputRead, fos, getPrivateKeyFromFile(fileKeyPrive));
+					this.decryptFile(inputRead, fos, privateKey);
 				} else {
-					this.decryptFile(input, fos, getPrivateKeyFromFile(fileKeyPrive));
+					this.decryptFile(input, fos,privateKey);
 				}
 
 			}

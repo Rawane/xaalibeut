@@ -56,10 +56,7 @@ public class XoolibeutMain {
 			if (line.hasOption("ed")) {
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
-				}
-				if (line.getOptionValue("rsasize") != null) {
-					encrypt.setMaxSizeByteEncrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8 - 11);
-				}
+				}				
 				encrypt.encryptDirectoryComplet(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
@@ -75,10 +72,7 @@ public class XoolibeutMain {
 					if (line.hasOption("z")) {
 						deleteFile(Paths.get(line.getOptionValue("asource") + ".zip"));
 					}
-				}
-				if (line.getOptionValue("rsasize") != null) {
-					decrypt.setMaxSizeByteDecrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8);
-				}
+				}				
 				decrypt.decryptDirectoryComplet(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
@@ -86,10 +80,7 @@ public class XoolibeutMain {
 			if (line.hasOption("ej")) {
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
-				}
-				if (line.getOptionValue("rsasize") != null) {
-					encrypt.setMaxSizeByteEncrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8 - 11);
-				}
+				}				
 				if (line.getOptionValue("nocrypt") != null) {
 					encrypt.encryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"),
 							line.getOptionValue("nocrypt").split(";"));
@@ -102,10 +93,7 @@ public class XoolibeutMain {
 			if (line.hasOption("dj")) {
 				if (line.getOptionValue("asource") == null || line.getOptionValue("bkey") == null) {
 					printCommandeEchec(args);
-				}
-				if (line.getOptionValue("rsasize") != null) {
-					decrypt.setMaxSizeByteDecrypt(Integer.parseInt(line.getOptionValue("rsasize")) / 8);
-				}
+				}				
 				decrypt.decryptProjetJava(line.getOptionValue("asource"), line.getOptionValue("bkey"));
 
 			}
@@ -130,34 +118,34 @@ public class XoolibeutMain {
 	 */
 	private static Options configParameters() {
 		final Option rsaGenKeyOption = Option.builder("r").longOpt("rsa")
-				.desc("Génération de clé privé et public,use avec option -d").hasArg(false).required(false).build();
+				.desc("Génération de clé privé et public, utiliser avec option -d et -s ").hasArg(false).required(false).build();
 		final Option encryptProjetJava = Option.builder("ej").longOpt("encpjava").desc("Crypter un projet java")
 				.hasArg(false).required(false).build();
 		final Option decryptProjetJava = Option.builder("dj").longOpt("decpjava").desc("Decrypter un projet java")
 				.hasArg(false).required(false).build();
 		final Option encryptDossier = Option.builder("ed").longOpt("encpdoss")
-				.desc("Crypter un dossier, usage avec -a et -b ").hasArg(false).argName("encdoss").required(false)
+				.desc("Crypter un dossier, utiliser avec -a   et -b ").hasArg(false).argName("encdoss").required(false)
 				.build();
 		final Option decryptDossier = Option.builder("dd").longOpt("decpdoss").desc("Decrypter un dossier")
 				.hasArg(false).required(false).build();
 		final Option destOptionKey = Option.builder("d").longOpt("dest")
-				.desc("Répertoire de destination de la paire de clés").argName("dest").hasArg(true).required(false)
+				.desc("Répertoire de destination de la paire de clés exemple -d=/home/user/key").argName("dest").hasArg(true).required(false)
 				.build();
 		final Option pathDossierOption = Option.builder("a").longOpt("asource")
-				.desc("Répertoire à crypter ou decrypter").argName("source").hasArg(true).required(false).build();
-		final Option keyFileOption = Option.builder("b").longOpt("bkey").desc("Clés privé ou public format PEM")
+				.desc("Répertoire à crypter ou decrypter exemple -a=/home/user/docs").argName("source").hasArg(true).required(false).build();
+		final Option keyFileOption = Option.builder("b").longOpt("bkey").desc("Clés privé ou public format PEM exemple -b=/home/user/key/Key.pem ")
 				.argName("key").hasArg(true).required(false).build();
 		final Option zipInputFileOption = Option.builder("zi").longOpt("zipin").desc("zipper un repertoire")
 				.hasArg(false).required(false).build();
 		final Option zipOuputFileOption = Option.builder("zo").longOpt("zipouput").desc("dézipper un repertoire")
 				.hasArg(false).required(false).build();
 		final Option suppDossierFileOption = Option.builder("z").longOpt("supp")
-				.desc("supprime le  repertoire après traitement,usage avec -a").hasArg(false).required(false).build();
+				.desc("supprime le repertoire après traitement, utiliser avec -a").hasArg(false).required(false).build();
 		final Option dossierNonCrypt = Option.builder("n").longOpt("nocrypt")
-				.desc("choisir un ou plusieurs dossier à ne pas crypter suivi ;,usage avec -a").argName("nocrypt")
+				.desc("choisir un ou plusieurs dossier à ne pas crypter suivi, utiliser avec -a").argName("nocrypt")
 				.hasArg(true).required(false).build();
 		final Option rsaSizeKeyAlgo = Option.builder("s").longOpt("rsasize")
-				.desc("choisir la taille de la clé pour algo RSA 1024,2048").argName("rsasize").hasArg(true)
+				.desc("choisir la taille de la clé pour algo RSA 1024,2048 exemple -s=2048").argName("rsasize").hasArg(true)
 				.required(false).build();
 
 		final Options options = new Options();

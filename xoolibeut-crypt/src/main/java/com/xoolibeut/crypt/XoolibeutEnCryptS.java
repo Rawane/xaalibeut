@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 public class XoolibeutEnCryptS {
 	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutEnCryptS.class);
 	private Cipher cipher;
-	private int maxSizeByteEncrypt = 117;
 	private int countFileEncrpypt = 0;
 	private int countAllFileModeEnCrypt = 0;
 
@@ -55,27 +54,8 @@ public class XoolibeutEnCryptS {
 
 			e.printStackTrace();
 		}
-	}
+	}	
 
-	public int getMaxSizeByteEncrypt() {
-		return maxSizeByteEncrypt;
-	}
-
-	public void setMaxSizeByteEncrypt(int maxSizeByteEncrypt) {
-		this.maxSizeByteEncrypt = maxSizeByteEncrypt;
-	}
-
-	public XoolibeutEnCryptS(int rsaSize) {
-		try {
-			cipher = Cipher.getInstance("RSA");
-			this.maxSizeByteEncrypt = rsaSize / 8 - 11;
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * @param args
@@ -97,7 +77,7 @@ public class XoolibeutEnCryptS {
 	 * @return
 	 * @throws RSAException
 	 */
-	public static RSAPublicKey getPublicKeyFromFile(String fileNameKey) throws RSAException {
+	public  RSAPublicKey getPublicKeyFromFile(String fileNameKey) throws RSAException {
 		RSAPublicKey publicKey = null;
 		try {
 			publicKey = RSAPublicKeyUtility
@@ -137,8 +117,11 @@ public class XoolibeutEnCryptS {
 
 	public void encryptFile(String inputFile, String pathOutput, String fileKeyPublic)
 			throws IOException, GeneralSecurityException, RSAException {
+		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);
+		
+		int maxSizeByteEncrypt = publicKey.getModulus().bitCount() / 8 - 11;
 		if (Paths.get(inputFile).toFile().length() <= maxSizeByteEncrypt) {
-			this.encryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, fileKeyPublic);
+			this.encryptFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput, publicKey);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
@@ -152,9 +135,9 @@ public class XoolibeutEnCryptS {
 					for (int i = 0; i < nbRead; i++) {
 						inputRead[i] = input[i];
 					}
-					this.encryptFile(inputRead, fos, getPublicKeyFromFile(fileKeyPublic));
+					this.encryptFile(inputRead, fos,publicKey);
 				} else {
-					this.encryptFile(input, fos, getPublicKeyFromFile(fileKeyPublic));
+					this.encryptFile(input, fos, publicKey);
 				}
 
 			}
