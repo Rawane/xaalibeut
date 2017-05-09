@@ -4,14 +4,13 @@ Si vous avez des données sensible que vous mettez dans vos cloud, mieux vaut le
 Premièrement il faut générer une paire de clés privé et public avec la ligne de commande:
 
 java -jar xoolibeut-crypt.jar -r -d="Saisissez le répértoire de destination de la paire clés" -s="choisir 1024 ou 2048 ou 4096".
-Exemple :
-java -jar xoolibeut-crypt.jar -r -d="/home/user/perso/security" -s=2048
-
-pour crypter vos dossiers :
+Exemple :  
+java -jar xoolibeut-crypt.jar -r -d="/home/user/perso/security" -s=2048  
+pour crypter vos dossiers :  
 java -jar xoolibeut-crypt.jar -ed -a="Saisissez le répértoire à crypter" -b="saisissez la clé public généré avant"   
-Exemple:
+Exemple:  
 java -jar xoolibeut-crypt.jar -ed -a=/home/user/perso/photos -b=/home/user/perso/security/PublicKey.pem   
-Pour décrypter vos dossiers :
+Pour décrypter vos dossiers :  
 java -jar xoolibeut-crypt.jar -dd -a="Saisissez le répértoire à decrypter" -b="saisissez la clé privé généré avant"   
 
 java -jar xoolibeut-crypt.jar -dd -a=/home/user/perso/photos -b=/home/user/perso/security/PrivateKey.pem   
