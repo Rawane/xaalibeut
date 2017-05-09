@@ -29,7 +29,7 @@ usage: rsa commande [-a <source>] [-b <key>] [-d <dest>] [-dd] [-dj] [-ed]
  -ed,--encpdoss           Crypter un dossier, utiliser avec -a   et -b  
  -ej,--encpjava           Crypter un projet java  
  -n,--nocrypt <nocrypt>   choisir un ou plusieurs dossier à ne pas crypter suivi, utiliser avec -a  
- -r,--rsa                 Génération de clé privé et public, utiliser avec option -d et -s
+ -r,--rsa                 Génération de clé privé et public, utiliser avec option -d et -s  
  -s,--rsasize <rsasize>   choisir la taille de la clé pour algo RSA
                           1024,2048 exemple -s=2048
  -z,--supp                supprime le repertoire après traitement, utiliser avec -a
