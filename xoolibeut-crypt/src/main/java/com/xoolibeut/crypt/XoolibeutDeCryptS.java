@@ -134,7 +134,7 @@ public class XoolibeutDeCryptS {
 				countAllFileModeDeCrypt++;
 				return path.toFile().isDirectory()
 						|| path.toAbsolutePath().toString()
-								.endsWith(ADD_FILE_CRYPT_XOOL);
+								.contains(ADD_FILE_CRYPT_XOOL);
 			}
 
 		};

@@ -113,7 +113,7 @@ public class XoolibeutEnCryptS {
 	public void encryptFile(String inputFile, String pathOutput,
 			String fileKeyPublic) throws IOException, GeneralSecurityException,
 			RSAException {
-		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);		
+		RSAPublicKey publicKey = getPublicKeyFromFile(fileKeyPublic);
 		int maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
 		LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
 		if (Paths.get(inputFile).toFile().length() <= maxSizeByteEncrypt) {
@@ -180,7 +180,7 @@ public class XoolibeutEnCryptS {
 				public boolean test(Path path) {
 					countAllFileModeEnCrypt++;
 					return !path.toAbsolutePath().toString()
-							.endsWith(ADD_FILE_CRYPT_XOOL);
+							.contains(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
@@ -191,18 +191,27 @@ public class XoolibeutEnCryptS {
 			@Override
 			public void accept(Path path) {
 				try {
+					String absolutePath = path.toAbsolutePath().toString();
 
 					if (path.toFile().isDirectory()) {
 						LOGGER.info("encryptDirectory répertpoire  "
-								+ path.toAbsolutePath().toString());
-						encryptDirectoryWithDelete(path.toAbsolutePath()
-								.toString(), fileKeyPublic, predicate);
+								+ absolutePath);
+						encryptDirectoryWithDelete(absolutePath, fileKeyPublic,
+								predicate);
 					} else {
 						LOGGER.info("encryptDirectory file name "
-								+ path.toAbsolutePath().toString());
-						encryptFile(path.toAbsolutePath().toString(), path
-								.toAbsolutePath().toString()
-								+ ADD_FILE_CRYPT_XOOL, fileKeyPublic);
+								+ absolutePath);
+						int lastIndex = absolutePath.lastIndexOf(".");
+						String nomFileCrypte;
+						if (lastIndex > 0) {
+							nomFileCrypte = absolutePath
+									.substring(0, lastIndex)
+									+ ADD_FILE_CRYPT_XOOL
+									+ absolutePath.substring(lastIndex);
+						} else {
+							nomFileCrypte = absolutePath + ADD_FILE_CRYPT_XOOL;
+						}
+						encryptFile(absolutePath, nomFileCrypte, fileKeyPublic);
 						countFileEncrpypt++;
 						Files.delete(path);
 					}
@@ -259,11 +268,17 @@ public class XoolibeutEnCryptS {
 								+ path.toAbsolutePath().toString());
 
 						int lastIndex = pathAbsoluteFile.lastIndexOf(".");
-						encryptFile(
-								pathAbsoluteFile,
-								pathAbsoluteFile.substring(0, lastIndex)
-										+ ADD_FILE_CRYPT_XOOL
-										+ pathAbsoluteFile.substring(lastIndex),
+						String nomFileCrypte;
+						if (lastIndex > 0) {
+							nomFileCrypte = pathAbsoluteFile.substring(0,
+									lastIndex)
+									+ ADD_FILE_CRYPT_XOOL
+									+ pathAbsoluteFile.substring(lastIndex);
+						} else {
+							nomFileCrypte = pathAbsoluteFile
+									+ ADD_FILE_CRYPT_XOOL;
+						}
+						encryptFile(pathAbsoluteFile, nomFileCrypte,
 								fileKeyPublic);
 						countFileEncrpypt++;
 					}
@@ -289,8 +304,8 @@ public class XoolibeutEnCryptS {
 				String absolutePath = path.toAbsolutePath().toString();
 				return !absolutePath.contains(ADD_FILE_CRYPT_XOOL)
 						&& ((path.toFile().isDirectory() && !listNoCrypt
-								.contains(path.getFileName().toString()))
-						|| (absolutePath.endsWith(".java")
+								.contains(path.getFileName().toString())) || (absolutePath
+								.endsWith(".java")
 								|| absolutePath.endsWith(".properties")
 								|| absolutePath.endsWith(".css")
 								|| absolutePath.endsWith(".js")
