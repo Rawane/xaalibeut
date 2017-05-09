@@ -1,6 +1,6 @@
 # xaalibeut
 Ce projet vous permet de sécuriser vos données avec l'ago RSA.
-Si vous avez des données sensible que vous mettez dans vos cloud, mieux vaut les sécuriser avant de les transmettre.
+Si vous avez des données sensible que vous mettez dans vos cloud, mieux vaut les sécuriser avant de les transmettre.  
 Premièrement il faut générer une paire de clés privé et public avec la ligne de commande:
 
 java -jar xoolibeut-crypt.jar -r -d="Saisissez le répértoire de destination de la paire clés" -s="choisir 1024 ou 2048 ou 4096".
