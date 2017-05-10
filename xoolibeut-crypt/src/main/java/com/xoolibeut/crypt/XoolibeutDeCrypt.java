@@ -51,7 +51,7 @@ public class XoolibeutDeCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	public void writeToFile(String pathSource, byte[] ouputBytes)
+	private void writeToFile(String pathSource, byte[] ouputBytes)
 			throws IOException {
 		File f = new File(pathSource);
 		f.getParentFile().mkdirs();
@@ -68,12 +68,17 @@ public class XoolibeutDeCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	public void writeTempToFile(FileOutputStream fos, byte[] ouputBytes)
+	private void writeTempToFile(FileOutputStream fos, byte[] ouputBytes)
 			throws IOException {
 		fos.write(ouputBytes);
 
 	}
 
+	/**
+	 * Finalise l'action de décryptage.
+	 * 
+	 * @throws IOException
+	 */
 	public void doFinal() throws IOException {
 		long start = System.currentTimeMillis();
 		decryptDirectory(this.source);
@@ -82,11 +87,17 @@ public class XoolibeutDeCrypt {
 		LOGGER.info("nombre de fichier decrypté " + metric.getCountFileTraite());
 		LOGGER.info("Toal data décrypté " + metric.formatTotalSize());
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("Durée en minutes  "
-				+ Duration.ofMillis(end).toMinutes());
+		LOGGER.info("Durée en minutes  " + Duration.ofMillis(end).toMinutes());
 	}
 
-	public void decryptDirectory(String pathDirectory) throws IOException {
+	/**
+	 * décrypte un répertoire. les fichier dont les noms contiennent le pattern
+	 * _xool.
+	 * 
+	 * @param pathDirectory
+	 * @throws IOException
+	 */
+	private void decryptDirectory(String pathDirectory) throws IOException {
 		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
 				predicate);
 		Consumer<Path> actionDecrypt = new Consumer<Path>() {
@@ -124,7 +135,16 @@ public class XoolibeutDeCrypt {
 		pathStream.forEach(actionDecrypt);
 	}
 
-	public void decryptFile(String inputFile, String pathOutput)
+	/**
+	 * Décripte un fichier en entier. un fichier dont le nom contient _xool
+	 * 
+	 * @param inputFile
+	 * @param pathOutput
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 * @throws RSAException
+	 */
+	private void decryptFile(String inputFile, String pathOutput)
 			throws IOException, GeneralSecurityException, RSAException {
 
 		int maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
@@ -158,13 +178,30 @@ public class XoolibeutDeCrypt {
 
 	}
 
-	public void decryptLittleFile(byte[] input, String pathOutput)
+	/**
+	 * décrypte un petit fichier.
+	 * 
+	 * @param input
+	 * @param pathOutput
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 */
+	private void decryptLittleFile(byte[] input, String pathOutput)
 			throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
 
-	public void decryptByte(byte[] input, FileOutputStream fos)
+	/**
+	 * décypter un tableau de byte.
+	 * 
+	 * @param input
+	 * @param fos
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 * @throws RSAException
+	 */
+	private void decryptByte(byte[] input, FileOutputStream fos)
 			throws IOException, GeneralSecurityException, RSAException {
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 		writeTempToFile(fos, cipher.doFinal(input));
@@ -225,7 +262,8 @@ public class XoolibeutDeCrypt {
 			predicate = new Predicate<Path>() {
 				@Override
 				public boolean test(Path path) {
-					metric.setCountAllFilInFolder(metric.getCountAllFilInFolder() + 1);
+					metric.setCountAllFilInFolder(metric
+							.getCountAllFilInFolder() + 1);
 					return path.toFile().isDirectory()
 							|| path.toAbsolutePath().toString()
 									.contains(ADD_FILE_CRYPT_XOOL);

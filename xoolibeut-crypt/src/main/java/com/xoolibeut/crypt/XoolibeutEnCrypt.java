@@ -77,21 +77,31 @@ public class XoolibeutEnCrypt {
 
 	}
 
+	/**
+	 * finalise l'actionde cryptage.
+	 * 
+	 * @throws IOException
+	 */
 	public void doFinal() throws IOException {
 		long start = System.currentTimeMillis();
 		encryptDirectory(this.source);
 		LOGGER.info("nombre de fichier traité "
 				+ metric.getCountAllFilInFolder());
-		LOGGER.info("nombre de fichier encrypté "
-				+ metric.getCountFileTraite());
+		LOGGER.info("nombre de fichier encrypté " + metric.getCountFileTraite());
 		LOGGER.info("Toal data crypté " + metric.formatTotalSize());
 		long end = System.currentTimeMillis() - start;
 		LOGGER.info("Encrypt Durée en minutes  "
 				+ Duration.ofMillis(end).toMinutes());
 	}
 
+	/**
+	 * crypter un répertoire passé en paramètre.
+	 * 
+	 * @param pathDirectory
+	 * @throws IOException
+	 */
 	private void encryptDirectory(String pathDirectory) throws IOException {
-		Stream<Path> pathStream;
+
 		Consumer<Path> action = new Consumer<Path>() {
 			@Override
 			public void accept(Path path) {
@@ -131,10 +141,21 @@ public class XoolibeutEnCrypt {
 			}
 
 		};
-		pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
+		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
+				predicate);
 		pathStream.forEach(action);
 	}
 
+	/**
+	 * crypter un fichier en entier. le fichier de sortie est nommé
+	 * filename_xool.extension
+	 * 
+	 * @param inputFile
+	 * @param pathOutput
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 * @throws RSAException
+	 */
 	private void encryptFile(String inputFile, String pathOutput)
 			throws IOException, GeneralSecurityException, RSAException {
 
@@ -169,6 +190,14 @@ public class XoolibeutEnCrypt {
 
 	}
 
+	/**
+	 * cypter un petit fichier. *
+	 * 
+	 * @param input
+	 * @param pathOutput
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 */
 	private void encryptLittleFile(byte[] input, String pathOutput)
 			throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -176,6 +205,14 @@ public class XoolibeutEnCrypt {
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
 
+	/**
+	 * encrypter un tableau de byte .
+	 * 
+	 * @param input
+	 * @param fos
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 */
 	private void encryptByte(byte[] input, FileOutputStream fos)
 			throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
