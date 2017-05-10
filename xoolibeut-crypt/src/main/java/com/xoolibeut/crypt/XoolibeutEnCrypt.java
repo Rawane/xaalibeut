@@ -16,7 +16,6 @@ public class XoolibeutEnCrypt {
 	private String publicKeyFile;
 	private Cipher cipher;
 	private String source;
-	private int maxSizeByteEncrypt = 117;
 	private int countFileEncrpypt = 0;
 	private int countAllFileModeEnCrypt = 0;
 
