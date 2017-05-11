@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class XoolibeutDeCrypt {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(XoolibeutDeCrypt.class);
-	private static final String ADD_FILE_CRYPT_XOOL = "_xool";
+	private static final String ADD_FILE_CRYPT_XOOL = ".xool";
 	private Predicate<Path> predicate;
 	private Cipher cipher;
 	private String source;
@@ -266,7 +266,7 @@ public class XoolibeutDeCrypt {
 							.getCountAllFilInFolder() + 1);
 					return path.toFile().isDirectory()
 							|| path.toAbsolutePath().toString()
-									.contains(ADD_FILE_CRYPT_XOOL);
+									.endsWith(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
