@@ -217,6 +217,10 @@ public class XoolibeutDeCrypt {
 		return new Builder(key);
 	}
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	/**
 	 * Classe Builder.
 	 * 
@@ -229,19 +233,17 @@ public class XoolibeutDeCrypt {
 		private String source;
 		private RSAPrivateKey privateKey;
 		private TypeProjet typeProjet;
-
+		private String password;
+		private String[] multiplPrivateKeyFiles;
 		private Metric metric = new Metric();
 
 		public Builder() {
 
 		}
 
-		public Builder(String privateKeyFile) {
-			try {
-				this.privateKey = buildPrivateKeyFromFile(privateKeyFile);
-			} catch (RSAException exception) {
-				LOGGER.error("Builder erreur ", exception);
-			}
+		public Builder(String privateKeyFiles) {
+			multiplPrivateKeyFiles = privateKeyFiles.split(";");
+
 		}
 
 		public Builder withPredicate(Predicate<Path> predicate) {
@@ -249,16 +251,17 @@ public class XoolibeutDeCrypt {
 			return this;
 		}
 
-		public Builder withKey(String publicKeyFile) {
-			try {
-				this.privateKey = buildPrivateKeyFromFile(publicKeyFile);
-			} catch (RSAException exception) {
-				LOGGER.error("erreur ", exception);
-			}
+		public Builder withPassword(String password) {
+			this.password = password;
 			return this;
 		}
 
-		public Builder predicate() {
+		public Builder withKey(String privateKeyFiles) {
+			multiplPrivateKeyFiles = privateKeyFiles.split(";");
+			return this;
+		}
+
+		private void predicate() {
 			predicate = new Predicate<Path>() {
 				@Override
 				public boolean test(Path path) {
@@ -270,7 +273,6 @@ public class XoolibeutDeCrypt {
 				}
 
 			};
-			return this;
 
 		}
 
@@ -316,16 +318,33 @@ public class XoolibeutDeCrypt {
 		}
 
 		public XoolibeutDeCrypt build() {
+			try {
+				this.buildPrivateKeyFromFile();
+				if (this.predicate == null) {
+					this.predicate();
+				}
+			} catch (RSAException exception) {
+				LOGGER.error("erreur ", exception);
+			}
 			return new XoolibeutDeCrypt(this);
 		}
 
-		private RSAPrivateKey buildPrivateKeyFromFile(String fileNameKey)
-				throws RSAException {
-			RSAPrivateKey privateKey = null;
+		private RSAPrivateKey buildPrivateKeyFromFile() throws RSAException {
 			try {
-				privateKey = RSAPrivateKeyUtility
-						.convertToRSAPrivateKey(new String(Files
-								.readAllBytes(Paths.get(fileNameKey))));
+				if (password == null) {
+					StringBuilder keyContent = new StringBuilder(2048);
+					for (String keyfile : multiplPrivateKeyFiles) {
+						keyContent.append(new String(Files.readAllBytes(Paths
+								.get(keyfile))));
+					}
+					privateKey = RSAPrivateKeyUtility
+							.convertToRSAPrivateKey(keyContent.toString());
+
+				} else {
+					privateKey = RSAPrivateKeyUtility
+							.convertToRSAPrivateKey(TransformKey.transformFile(
+									password, multiplPrivateKeyFiles));
+				}
 			} catch (IOException exception) {
 
 				exception.printStackTrace();

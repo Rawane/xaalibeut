@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xoolibeut.crypt.TypeProjet;
 import com.xoolibeut.crypt.XoolibeutDeCrypt;
+import com.xoolibeut.crypt.XoolibeutDeCrypt.Builder;
 import com.xoolibeut.crypt.XoolibeutEnCrypt;
 import com.xoolibeut.crypt.XoolibeutRSAUtil;
 import com.xoolibeut.crypt.XoolibeutZipIn;
@@ -30,7 +31,6 @@ public class XoolibeutMain {
 			.getLogger(XoolibeutMain.class);
 
 	public static void main(String[] args) {
-
 		XoolibeutZipIn zipIn = new XoolibeutZipIn();
 		XoolibeutZipOut zipOut = new XoolibeutZipOut();
 		final Options options = configParameters();
@@ -38,7 +38,6 @@ public class XoolibeutMain {
 		try {
 			printHelp(args);
 			final CommandLine line = parser.parse(options, args);
-
 			String commandeLine = "";
 			for (String arg : args) {
 				commandeLine = commandeLine + " " + arg;
@@ -61,7 +60,7 @@ public class XoolibeutMain {
 				}
 				XoolibeutEnCrypt.builder(line.getOptionValue("bkey")).algoRSA()
 						.source(line.getOptionValue("asource"))
-						.type(TypeProjet.DOSSIER).predicate().build().doFinal();
+						.type(TypeProjet.DOSSIER).build().doFinal();
 
 			}
 			// decrypter un dossier
@@ -80,10 +79,14 @@ public class XoolibeutMain {
 								+ ".zip"));
 					}
 				}
-
-				XoolibeutDeCrypt.builder(line.getOptionValue("bkey")).algoRSA()
+				Builder builderDecrypt = XoolibeutDeCrypt
+						.builder(line.getOptionValue("bkey")).algoRSA()
 						.source(line.getOptionValue("asource"))
-						.type(TypeProjet.DOSSIER).predicate().build().doFinal();
+						.type(TypeProjet.DOSSIER);
+				if (line.getOptionValue("pass") != null) {
+					builderDecrypt.withPassword(line.getOptionValue("pass"));
+				}
+				builderDecrypt.build().doFinal();
 
 			}
 			// encrypter un projet java
@@ -98,7 +101,7 @@ public class XoolibeutMain {
 				XoolibeutEnCrypt.builder(line.getOptionValue("bkey")).algoRSA()
 						.source(line.getOptionValue("asource"))
 						.noCrypt(line.getOptionValue("nocrypt"))
-						.type(TypeProjet.JAVA).predicate().build().doFinal();
+						.type(TypeProjet.JAVA).build().doFinal();
 
 			}
 			// decrypter un projet java
@@ -108,9 +111,14 @@ public class XoolibeutMain {
 					printCommandeEchec(args);
 				}
 
-				XoolibeutDeCrypt.builder(line.getOptionValue("bkey")).algoRSA()
+				Builder builderDecrypt = XoolibeutDeCrypt
+						.builder(line.getOptionValue("bkey")).algoRSA()
 						.source(line.getOptionValue("asource"))
-						.type(TypeProjet.JAVA).predicate().build().doFinal();
+						.type(TypeProjet.JAVA);
+				if (line.getOptionValue("pass") != null) {
+					builderDecrypt.withPassword(line.getOptionValue("pass"));
+				}
+				builderDecrypt.build().doFinal();
 
 			}
 			if (line.hasOption("zi")) {
@@ -163,7 +171,7 @@ public class XoolibeutMain {
 		final Option keyFileOption = Option
 				.builder("b")
 				.longOpt("bkey")
-				.desc("Clés privé ou public format PEM exemple -b=/home/user/key/Key.pem ")
+				.desc("Clés privé ou public format PEM exemple -b=/home/user/key/Key.pem,possible de diviser la privé en plusieurs fichiers séparé par ; ")
 				.argName("key").hasArg(true).required(false).build();
 		final Option zipInputFileOption = Option.builder("zi").longOpt("zipin")
 				.desc("zipper un repertoire").hasArg(false).required(false)
@@ -186,6 +194,11 @@ public class XoolibeutMain {
 				.longOpt("rsasize")
 				.desc("choisir la taille de la clé pour algo RSA 1024,2048 exemple -s=2048")
 				.argName("rsasize").hasArg(true).required(false).build();
+		final Option passwordOption = Option
+				.builder("p")
+				.longOpt("pass")
+				.desc("A renseigner que si vous avez modifié votre clé privé par souci de sécurité")
+				.argName("pass").hasArg(true).required(false).build();
 
 		final Options options = new Options();
 		options.addOption(rsaGenKeyOption);
@@ -201,6 +214,7 @@ public class XoolibeutMain {
 		options.addOption(suppDossierFileOption);
 		options.addOption(dossierNonCrypt);
 		options.addOption(rsaSizeKeyAlgo);
+		options.addOption(passwordOption);
 		return options;
 	}
 

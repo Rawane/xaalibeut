@@ -23,7 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class XoolibeutEnCrypt {
-	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutEnCrypt.class);
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(XoolibeutEnCrypt.class);
 	private static final String ADD_FILE_CRYPT_XOOL = ".xool";
 	private Predicate<Path> predicate;
 	private Cipher cipher;
@@ -53,7 +54,8 @@ public class XoolibeutEnCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	public void writeToFile(String pathSource, byte[] ouputBytes) throws IOException {
+	public void writeToFile(String pathSource, byte[] ouputBytes)
+			throws IOException {
 		File f = new File(pathSource);
 		f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
@@ -69,7 +71,8 @@ public class XoolibeutEnCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	public void writeTempToFile(FileOutputStream fos, byte[] ouputBytes) throws IOException {
+	public void writeTempToFile(FileOutputStream fos, byte[] ouputBytes)
+			throws IOException {
 		fos.write(ouputBytes);
 
 	}
@@ -82,11 +85,13 @@ public class XoolibeutEnCrypt {
 	public void doFinal() throws IOException {
 		long start = System.currentTimeMillis();
 		encryptDirectory(this.source);
-		LOGGER.info("nombre de fichier traité " + metric.getCountAllFilInFolder());
+		LOGGER.info("nombre de fichier traité "
+				+ metric.getCountAllFilInFolder());
 		LOGGER.info("nombre de fichier encrypté " + metric.getCountFileTraite());
 		LOGGER.info("Toal data crypté " + metric.formatTotalSize());
 		long end = System.currentTimeMillis() - start;
-		LOGGER.info("Encrypt Durée en minutes  " + Duration.ofMillis(end).toMinutes());
+		LOGGER.info("Encrypt Durée en minutes  "
+				+ Duration.ofMillis(end).toMinutes());
 	}
 
 	/**
@@ -103,15 +108,19 @@ public class XoolibeutEnCrypt {
 				try {
 					String pathAbsoluteFile = path.toAbsolutePath().toString();
 					if (path.toFile().isDirectory()) {
-						LOGGER.info("encryptDirectory répertoire  " + pathAbsoluteFile);
+						LOGGER.info("encryptDirectory répertoire  "
+								+ pathAbsoluteFile);
 						encryptDirectory(pathAbsoluteFile);
 					} else {
-						LOGGER.info("encryptDirectory nom du fichier cripté " + path.toAbsolutePath().toString());
+						LOGGER.info("encryptDirectory nom du fichier cripté "
+								+ path.toAbsolutePath().toString());
 
-						String nomFileCrypte = pathAbsoluteFile + ADD_FILE_CRYPT_XOOL;
+						String nomFileCrypte = pathAbsoluteFile
+								+ ADD_FILE_CRYPT_XOOL;
 						encryptFile(pathAbsoluteFile, nomFileCrypte);
 						metric.setCountFileTraite(metric.getCountFileTraite() + 1);
-						metric.setTotalSize(metric.getTotalSize() + Files.size(path));
+						metric.setTotalSize(metric.getTotalSize()
+								+ Files.size(path));
 						if (TypeProjet.DOSSIER.equals(typeProjet)) {
 							Files.delete(path);
 						}
@@ -123,7 +132,8 @@ public class XoolibeutEnCrypt {
 			}
 
 		};
-		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
+		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
+				predicate);
 		pathStream.forEach(action);
 	}
 
@@ -143,13 +153,15 @@ public class XoolibeutEnCrypt {
 		int maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
 		// LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
 		if (Files.size(Paths.get(inputFile)) <= maxSizeByteEncrypt) {
-			this.encryptLittleFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput);
+			this.encryptLittleFile(Files.readAllBytes(Paths.get(inputFile)),
+					pathOutput);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
 			FileOutputStream fos = new FileOutputStream(fileOuput);
 			byte[] input = new byte[maxSizeByteEncrypt];
-			FileInputStream fileInputStream = new FileInputStream(Paths.get(inputFile).toFile());
+			FileInputStream fileInputStream = new FileInputStream(Paths.get(
+					inputFile).toFile());
 			int nbRead = 0;
 			while ((nbRead = fileInputStream.read(input)) > 0) {
 				byte[] inputRead = new byte[nbRead];
@@ -177,7 +189,8 @@ public class XoolibeutEnCrypt {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	private void encryptLittleFile(byte[] input, String pathOutput) throws IOException, GeneralSecurityException {
+	private void encryptLittleFile(byte[] input, String pathOutput)
+			throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
 		writeToFile(pathOutput, cipher.doFinal(input));
@@ -191,7 +204,8 @@ public class XoolibeutEnCrypt {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	private void encryptByte(byte[] input, FileOutputStream fos) throws IOException, GeneralSecurityException {
+	private void encryptByte(byte[] input, FileOutputStream fos)
+			throws IOException, GeneralSecurityException {
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 		writeTempToFile(fos, cipher.doFinal(input));
 	}
@@ -220,17 +234,15 @@ public class XoolibeutEnCrypt {
 		private TypeProjet typeProjet;
 		private String noCryptFolder;
 		private Metric metric = new Metric();
+		private String publicKeyFile;
 
 		public Builder() {
 
 		}
 
 		public Builder(String publicKeyFile) {
-			try {
-				this.publicKey = buildKeyPublic(publicKeyFile);
-			} catch (RSAException exception) {
-				LOGGER.error("Builder erreur ", exception);
-			}
+			this.publicKeyFile = publicKeyFile;
+
 		}
 
 		public Builder withPredicate(Predicate<Path> predicate) {
@@ -239,21 +251,19 @@ public class XoolibeutEnCrypt {
 		}
 
 		public Builder withKey(String publicKeyFile) {
-			try {
-				this.publicKey = buildKeyPublic(publicKeyFile);
-			} catch (RSAException exception) {
-				LOGGER.error("erreur ", exception);
-			}
+			this.publicKeyFile = publicKeyFile;
 			return this;
 		}
 
-		public Builder predicate() {
+		private void predicate() {
 			if (TypeProjet.DOSSIER.equals(typeProjet)) {
 				this.predicate = new Predicate<Path>() {
 					@Override
 					public boolean test(Path path) {
-						metric.setCountAllFilInFolder(metric.getCountAllFilInFolder() + 1);
-						return !path.toAbsolutePath().toString().endsWith(ADD_FILE_CRYPT_XOOL);
+						metric.setCountAllFilInFolder(metric
+								.getCountAllFilInFolder() + 1);
+						return !path.toAbsolutePath().toString()
+								.endsWith(ADD_FILE_CRYPT_XOOL);
 					}
 
 				};
@@ -261,28 +271,37 @@ public class XoolibeutEnCrypt {
 				if (TypeProjet.JAVA.equals(typeProjet)) {
 					final List<String> listNoCrypt;
 					if (noCryptFolder != null) {
-						listNoCrypt = Arrays.asList(this.noCryptFolder.split(";"));
+						listNoCrypt = Arrays.asList(this.noCryptFolder
+								.split(";"));
 					} else {
 						listNoCrypt = Collections.emptyList();
 					}
 					this.predicate = new Predicate<Path>() {
 						@Override
 						public boolean test(Path path) {
-							metric.setCountAllFilInFolder(metric.getCountAllFilInFolder() + 1);
-							String absolutePath = path.toAbsolutePath().toString();
-							return !absolutePath.endsWith(ADD_FILE_CRYPT_XOOL) && ((path.toFile().isDirectory()
-									&& !listNoCrypt.contains(path.getFileName().toString()))
-									|| (absolutePath.endsWith(".java") || absolutePath.endsWith(".properties")
-											|| absolutePath.endsWith(".css") || absolutePath.endsWith(".js")
-											|| absolutePath.endsWith(".html") || absolutePath.endsWith(".sql")
-											|| absolutePath.endsWith(".xml") || absolutePath.endsWith(".png")
-											|| absolutePath.endsWith(".jpg")));
+							metric.setCountAllFilInFolder(metric
+									.getCountAllFilInFolder() + 1);
+							String absolutePath = path.toAbsolutePath()
+									.toString();
+							return !absolutePath.endsWith(ADD_FILE_CRYPT_XOOL)
+									&& ((path.toFile().isDirectory() && !listNoCrypt
+											.contains(path.getFileName()
+													.toString())) || (absolutePath
+											.endsWith(".java")
+											|| absolutePath
+													.endsWith(".properties")
+											|| absolutePath.endsWith(".css")
+											|| absolutePath.endsWith(".js")
+											|| absolutePath.endsWith(".html")
+											|| absolutePath.endsWith(".sql")
+											|| absolutePath.endsWith(".xml")
+											|| absolutePath.endsWith(".png") || absolutePath
+												.endsWith(".jpg")));
 						}
 
 					};
 				}
 			}
-			return this;
 
 		}
 
@@ -328,6 +347,7 @@ public class XoolibeutEnCrypt {
 				cipher = Cipher.getInstance(algo);
 			} catch (Exception exception) {
 				LOGGER.error("Builder erreur ", exception);
+				throw new RuntimeException(exception);
 			}
 			return this;
 		}
@@ -337,7 +357,21 @@ public class XoolibeutEnCrypt {
 			return this;
 		}
 
+		/**
+		 * Contruit un XoolibeutEncrypt.
+		 * 
+		 * @return
+		 */
 		public XoolibeutEnCrypt build() {
+			try {
+				this.buildKeyPublic();
+				if (predicate == null) {
+					this.predicate();
+				}
+			} catch (RSAException exception) {
+				LOGGER.error("erreur ", exception);
+				throw new RuntimeException(exception);
+			}
 			return new XoolibeutEnCrypt(this);
 		}
 
@@ -347,11 +381,11 @@ public class XoolibeutEnCrypt {
 		 * @return
 		 * @throws RSAException
 		 */
-		private RSAPublicKey buildKeyPublic(String publicKeyFile) throws RSAException {
-			RSAPublicKey publicKey = null;
+		private RSAPublicKey buildKeyPublic() throws RSAException {			
 			try {
 				publicKey = RSAPublicKeyUtility
-						.convertToRSAPublicKey(new String(Files.readAllBytes(Paths.get(publicKeyFile))));
+						.convertToRSAPublicKey(new String(Files
+								.readAllBytes(Paths.get(publicKeyFile))));
 			} catch (IOException exception) {
 				throw new RSAException("erreur buildKeyPublic ", exception);
 			}
