@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransformKey {
-	private static final String ALPHA = "~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	private static final String ALPHA = "~ABCDEFGHIJKLMNOPQRSTUVWXY!Z9812375640";
 
 	public static int getOrdre(String key) {
 
@@ -15,11 +15,20 @@ public class TransformKey {
 	}
 
 	public static void main(String[] args) {
+
 		try {
+			System.out.println("test equals keys "
+					+ new String(Files.readAllBytes(Paths.get("/home/rawane/devs/tmp/key/PrivateKeyM.pem"))).equals(
+							transformFile("azazzazaza", "/home/rawane/devs/tmp/key/PrivateKeyM_T_1.pem",
+									"/home/rawane/devs/tmp/key/PrivateKeyM_T_2.pem")));
+			RSAPrivateKeyUtility.convertToRSAPrivateKey(
+					new String(Files.readAllBytes(Paths.get("/home/rawane/devs/tmp/key/PrivateKeyM.pem"))));
 			System.out.println(transformFile("RawaneNdeyeAidaSalimata", "/home/rawane/devs/tmp/key/PrivateKeyM_T_1.pem",
 					"/home/rawane/devs/tmp/key/PrivateKeyM_T_2.pem"));
-			// RSAPrivateKeyUtility.convertToRSAPrivateKey(transformFile("RawaneNdeyeAidaSalimata",
-			// "/home/rawane/devs/tmp/key/PrivateKeyM_T_1.pem","/home/rawane/devs/tmp/key/PrivateKeyM_T_2.pem"));
+			RSAPrivateKeyUtility.convertToRSAPrivateKey(transformFile("RawaneNdeyeAidaSalimata",
+					"/home/rawane/devs/tmp/key/PrivateKeyM_T_1.pem", "/home/rawane/devs/tmp/key/PrivateKeyM_T_2.pem"));
+			// RSAPrivateKeyUtility.convertToRSAPrivateKey(new
+			// String(Files.readAllBytes(Paths.get("/home/rawane/devs/tmp/key/PrivateKeyM.pem"))));
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
@@ -49,7 +58,6 @@ public class TransformKey {
 	 */
 	public static String transformFile(String password, String... paths) {
 		List<String> lines = new ArrayList<>(50);
-		List<String> linesTransform = new ArrayList<>(50);
 		try {
 			StringBuilder transformBuilder = new StringBuilder(2048);
 			for (String path : paths) {
@@ -61,34 +69,21 @@ public class TransformKey {
 				if (!lines.get(i).startsWith("----")) {
 					String trans = transformLine(lines.get(i), String.valueOf(carac));
 					transformBuilder.append(trans).append("\n");
-					linesTransform.add(trans);
-					System.out.println(" key " + carac);
-					System.out.println(" entrée  " + lines.get(i));
-					System.out.println(" trans  " + trans);
+
 				} else {
 					transformBuilder.append(lines.get(i)).append("\n");
-					linesTransform.add(lines.get(i));
 					String trans = transformLine(lines.get(i + 1), String.valueOf(carac));
-					linesTransform.add(trans);
 					transformBuilder.append(trans).append("\n");
 					i++;
 				}
 				i++;
 			}
-			int count = 0;
+
 			for (int k = i; k < lines.size(); k++) {
-				transformBuilder.append(lines.get(k)).append("\n");
-				count = k;
-			}
-			System.out.println("tansform i  " + i);
-			System.out.println("lines " + lines.size());
-			System.out.println("transform lines " + count);
-			List<String> lines1 = Files.readAllLines(Paths.get("/home/rawane/devs/tmp/key/PrivateKeyM.pem"));
-			for (int l = 0; l < lines1.size(); l++) {
-				if (!lines1.get(l).equals(linesTransform.get(l))) {
-					System.out.println("ligne  " + l + "  " + linesTransform.get(l));
-					System.out.println("ligne  " + l + "  " + lines1.get(l));
-					System.exit(1);
+				String trans = lines.get(k);
+				transformBuilder.append(trans);
+				if (k < lines.size() - 1) {
+					transformBuilder.append("\n");
 				}
 			}
 
@@ -100,5 +95,6 @@ public class TransformKey {
 
 		return null;
 	}
+
 
 }
