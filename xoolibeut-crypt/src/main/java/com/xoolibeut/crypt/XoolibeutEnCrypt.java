@@ -18,11 +18,20 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class XoolibeutEnCrypt {
+	/**
+	 * 
+	 */
+	private static final String ALGO_AES = "AES";
+	/**
+	 * 
+	 */
+	private static final String ALGO_RSA = "RSA";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(XoolibeutEnCrypt.class);
 	private static final String ADD_FILE_CRYPT_XOOL = ".xool";
@@ -30,8 +39,8 @@ public class XoolibeutEnCrypt {
 	private Cipher cipher;
 	private String source;
 	private Metric metric;
-	private RSAPublicKey publicKey;
 	private TypeProjet typeProjet;
+	private int maxSizeByteEncrypt;
 
 	/**
 	 * XoolibeutEncrypt.
@@ -42,9 +51,9 @@ public class XoolibeutEnCrypt {
 		this.cipher = builder.cipher;
 		this.source = builder.source;
 		this.predicate = builder.predicate;
-		this.publicKey = builder.publicKey;
 		this.typeProjet = builder.typeProjet;
 		this.metric = builder.metric;
+		this.maxSizeByteEncrypt = builder.maxSizeByteEncrypt;
 	}
 
 	/**
@@ -150,7 +159,6 @@ public class XoolibeutEnCrypt {
 	private void encryptFile(String inputFile, String pathOutput)
 			throws IOException, GeneralSecurityException, RSAException {
 
-		int maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
 		// LOGGER.debug("nombre de bloc à crypter " + maxSizeByteEncrypt);
 		if (Files.size(Paths.get(inputFile)) <= maxSizeByteEncrypt) {
 			this.encryptLittleFile(Files.readAllBytes(Paths.get(inputFile)),
@@ -191,8 +199,6 @@ public class XoolibeutEnCrypt {
 	 */
 	private void encryptLittleFile(byte[] input, String pathOutput)
 			throws IOException, GeneralSecurityException {
-		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
 
@@ -206,7 +212,6 @@ public class XoolibeutEnCrypt {
 	 */
 	private void encryptByte(byte[] input, FileOutputStream fos)
 			throws IOException, GeneralSecurityException {
-		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 		writeTempToFile(fos, cipher.doFinal(input));
 	}
 
@@ -235,6 +240,8 @@ public class XoolibeutEnCrypt {
 		private String noCryptFolder;
 		private Metric metric = new Metric();
 		private String publicKeyFile;
+		private String password;
+		private int maxSizeByteEncrypt = 8000;
 
 		public Builder() {
 
@@ -252,6 +259,11 @@ public class XoolibeutEnCrypt {
 
 		public Builder withKey(String publicKeyFile) {
 			this.publicKeyFile = publicKeyFile;
+			return this;
+		}
+
+		public Builder withPass(String pass) {
+			this.password = pass;
 			return this;
 		}
 
@@ -344,7 +356,7 @@ public class XoolibeutEnCrypt {
 
 		public Builder algo(String algo) {
 			try {
-				cipher = Cipher.getInstance(algo);
+				cipher = Cipher.getInstance(algo.toUpperCase());
 			} catch (Exception exception) {
 				LOGGER.error("Builder erreur ", exception);
 				throw new RuntimeException(exception);
@@ -353,7 +365,12 @@ public class XoolibeutEnCrypt {
 		}
 
 		public Builder algoRSA() {
-			algo("RSA");
+			algo(ALGO_RSA);
+			return this;
+		}
+
+		public Builder algoAES() {
+			algo(ALGO_AES);
 			return this;
 		}
 
@@ -364,11 +381,19 @@ public class XoolibeutEnCrypt {
 		 */
 		public XoolibeutEnCrypt build() {
 			try {
-				this.buildKeyPublic();
+				if (cipher.getAlgorithm().equals(ALGO_RSA)) {
+					this.buildKeyPublic();
+					cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+					maxSizeByteEncrypt = publicKey.getModulus().bitLength() / 8 - 11;
+				} else {
+					cipher.init(Cipher.ENCRYPT_MODE,
+							new SecretKeySpec(password.getBytes(), ALGO_AES));
+				}
 				if (predicate == null) {
 					this.predicate();
 				}
-			} catch (RSAException exception) {
+
+			} catch (Exception exception) {
 				LOGGER.error("erreur ", exception);
 				throw new RuntimeException(exception);
 			}
@@ -381,7 +406,7 @@ public class XoolibeutEnCrypt {
 		 * @return
 		 * @throws RSAException
 		 */
-		private RSAPublicKey buildKeyPublic() throws RSAException {			
+		private RSAPublicKey buildKeyPublic() throws RSAException {
 			try {
 				publicKey = RSAPublicKeyUtility
 						.convertToRSAPublicKey(new String(Files
@@ -392,21 +417,21 @@ public class XoolibeutEnCrypt {
 			return publicKey;
 		}
 
-	}
+		/**
+		 * @return the password
+		 */
+		public String getPassword() {
+			return password;
+		}
 
-	/**
-	 * @return the publicKey
-	 */
-	public RSAPublicKey getPublicKey() {
-		return publicKey;
-	}
+		/**
+		 * @param password
+		 *            the password to set
+		 */
+		public void setPassword(String password) {
+			this.password = password;
+		}
 
-	/**
-	 * @param publicKey
-	 *            the publicKey to set
-	 */
-	public void setPublicKey(RSAPublicKey publicKey) {
-		this.publicKey = publicKey;
 	}
 
 	/**

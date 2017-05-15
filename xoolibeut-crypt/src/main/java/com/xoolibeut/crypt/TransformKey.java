@@ -16,7 +16,7 @@ public class TransformKey {
 
 	public static void main(String[] args) {
 		try {
-			System.out.println(transformFile("RawaneNdeyeAidaSalimata",
+			System.out.println(transformFile("",
 					"/home/rawane/devs/tmp/key/PrivateKeyM_T_1.pem",
 					"/home/rawane/devs/tmp/key/PrivateKeyM_T_2.pem"));
 			// RSAPrivateKeyUtility.convertToRSAPrivateKey(transformFile("RawaneNdeyeAidaSalimata",

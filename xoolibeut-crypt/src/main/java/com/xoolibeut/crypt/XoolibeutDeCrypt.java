@@ -9,12 +9,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.AlgorithmParameterSpec;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +26,20 @@ public class XoolibeutDeCrypt {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(XoolibeutDeCrypt.class);
 	private static final String ADD_FILE_CRYPT_XOOL = ".xool";
+	/**
+	 * 
+	 */
+	private static final String ALGO_AES = "AES";
+	/**
+	 * 
+	 */
+	private static final String ALGO_RSA = "RSA";
 	private Predicate<Path> predicate;
 	private Cipher cipher;
 	private String source;
 	private Metric metric;
-	private RSAPrivateKey privateKey;
 	private TypeProjet typeProjet;
+	private int maxSizeByteDecrypt;
 
 	/**
 	 * XoolibeutEncrypt.
@@ -39,9 +50,9 @@ public class XoolibeutDeCrypt {
 		this.cipher = builder.cipher;
 		this.source = builder.source;
 		this.predicate = builder.predicate;
-		this.privateKey = builder.privateKey;
 		this.typeProjet = builder.typeProjet;
 		this.metric = builder.metric;
+		this.maxSizeByteDecrypt = builder.maxSizeByteDecrypt;
 	}
 
 	/**
@@ -53,6 +64,7 @@ public class XoolibeutDeCrypt {
 	 */
 	private void writeToFile(String pathSource, byte[] ouputBytes)
 			throws IOException {
+
 		File f = new File(pathSource);
 		f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
@@ -146,8 +158,6 @@ public class XoolibeutDeCrypt {
 	 */
 	private void decryptFile(String inputFile, String pathOutput)
 			throws IOException, GeneralSecurityException, RSAException {
-
-		int maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
 		// LOGGER.info("size clé privé " + privateKey.getModulus().bitLength());
 		if (Files.size(Paths.get(inputFile)) <= maxSizeByteDecrypt) {
 			this.decryptLittleFile(Files.readAllBytes(Paths.get(inputFile)),
@@ -155,6 +165,7 @@ public class XoolibeutDeCrypt {
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
+
 			FileOutputStream fos = new FileOutputStream(fileOuput);
 			byte[] input = new byte[maxSizeByteDecrypt];
 			FileInputStream fileInputStream = new FileInputStream(Paths.get(
@@ -188,7 +199,7 @@ public class XoolibeutDeCrypt {
 	 */
 	private void decryptLittleFile(byte[] input, String pathOutput)
 			throws IOException, GeneralSecurityException {
-		cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
 
@@ -203,7 +214,7 @@ public class XoolibeutDeCrypt {
 	 */
 	private void decryptByte(byte[] input, FileOutputStream fos)
 			throws IOException, GeneralSecurityException, RSAException {
-		cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
 		writeTempToFile(fos, cipher.doFinal(input));
 	}
 
@@ -236,6 +247,7 @@ public class XoolibeutDeCrypt {
 		private String password;
 		private String[] multiplPrivateKeyFiles;
 		private Metric metric = new Metric();
+		private int maxSizeByteDecrypt = 8000;
 
 		public Builder() {
 
@@ -251,7 +263,7 @@ public class XoolibeutDeCrypt {
 			return this;
 		}
 
-		public Builder withPassword(String password) {
+		public Builder withPass(String password) {
 			this.password = password;
 			return this;
 		}
@@ -305,7 +317,7 @@ public class XoolibeutDeCrypt {
 
 		public Builder algo(String algo) {
 			try {
-				cipher = Cipher.getInstance(algo);
+				cipher = Cipher.getInstance(algo.toUpperCase());
 			} catch (Exception exception) {
 				LOGGER.error("Builder erreur ", exception);
 			}
@@ -313,17 +325,31 @@ public class XoolibeutDeCrypt {
 		}
 
 		public Builder algoRSA() {
-			algo("RSA");
+			algo(ALGO_RSA);
+			return this;
+		}
+
+		public Builder algoAES() {
+			algo(ALGO_AES);
 			return this;
 		}
 
 		public XoolibeutDeCrypt build() {
 			try {
-				this.buildPrivateKeyFromFile();
+				if (cipher.getAlgorithm().equals("RSA")) {
+					this.buildPrivateKeyFromFile();
+					cipher.init(Cipher.DECRYPT_MODE, privateKey);
+					maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
+				} else {
+					 byte[] iv = new byte[cipher.getBlockSize()];
+					   AlgorithmParameterSpec spec = new IvParameterSpec(iv);
+					cipher.init(Cipher.DECRYPT_MODE,
+							new SecretKeySpec(password.getBytes(), "AES"),spec);
+				}
 				if (this.predicate == null) {
 					this.predicate();
 				}
-			} catch (RSAException exception) {
+			} catch (Exception exception) {
 				LOGGER.error("erreur ", exception);
 			}
 			return new XoolibeutDeCrypt(this);
