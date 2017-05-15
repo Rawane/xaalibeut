@@ -27,7 +27,7 @@ public class Metric {
 		if (totalSize < 1024 * 1024 * 1024) {
 			return (totalSize / (1024 * 1024)) + " MO";
 		} else {
-			return (totalSize / (1024 * 1024)) + " GO";
+			return (totalSize / (1024 * 1024*1024)) + " GO";
 		}
 	}
 
