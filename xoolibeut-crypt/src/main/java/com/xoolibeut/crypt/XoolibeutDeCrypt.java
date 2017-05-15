@@ -9,22 +9,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.AlgorithmParameterSpec;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class XoolibeutDeCrypt {
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(XoolibeutDeCrypt.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutDeCrypt.class);
 	private static final String ADD_FILE_CRYPT_XOOL = ".xool";
 	/**
 	 * 
@@ -62,8 +59,7 @@ public class XoolibeutDeCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	private void writeToFile(String pathSource, byte[] ouputBytes)
-			throws IOException {
+	private void writeToFile(String pathSource, byte[] ouputBytes) throws IOException {
 
 		File f = new File(pathSource);
 		f.getParentFile().mkdirs();
@@ -80,8 +76,7 @@ public class XoolibeutDeCrypt {
 	 * @param ouputBytes
 	 * @throws IOException
 	 */
-	private void writeTempToFile(FileOutputStream fos, byte[] ouputBytes)
-			throws IOException {
+	private void writeTempToFile(FileOutputStream fos, byte[] ouputBytes) throws IOException {
 		fos.write(ouputBytes);
 
 	}
@@ -94,8 +89,7 @@ public class XoolibeutDeCrypt {
 	public void doFinal() throws IOException {
 		long start = System.currentTimeMillis();
 		decryptDirectory(this.source);
-		LOGGER.info("nombre de fichier traité "
-				+ metric.getCountAllFilInFolder());
+		LOGGER.info("nombre de fichier traité " + metric.getCountAllFilInFolder());
 		LOGGER.info("nombre de fichier decrypté " + metric.getCountFileTraite());
 		LOGGER.info("Toal data décrypté " + metric.formatTotalSize());
 		long end = System.currentTimeMillis() - start;
@@ -110,28 +104,21 @@ public class XoolibeutDeCrypt {
 	 * @throws IOException
 	 */
 	private void decryptDirectory(String pathDirectory) throws IOException {
-		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(
-				predicate);
+		Stream<Path> pathStream = Files.list(Paths.get(pathDirectory)).filter(predicate);
 		Consumer<Path> actionDecrypt = new Consumer<Path>() {
 			@Override
 			public void accept(Path path) {
 				try {
-					LOGGER.info(" decryptProjetJava file name "
-							+ path.toAbsolutePath().toString());
+					LOGGER.info(" decryptProjet file name " + path.toAbsolutePath().toString());
 					if (path.toFile().isDirectory()) {
-						LOGGER.info(" decryptProjetJava répertoire name "
-								+ path.toAbsolutePath().toString());
+						LOGGER.info(" decryptProjet répertoire name " + path.toAbsolutePath().toString());
 						decryptDirectory(path.toAbsolutePath().toString());
 					} else {
-						LOGGER.info(" decryptProjetJava file name "
-								+ path.toAbsolutePath().toString());
+						LOGGER.info(" decryptProjet file name " + path.toAbsolutePath().toString());
 						metric.setCountFileTraite(metric.getCountFileTraite() + 1);
-						decryptFile(
-								path.toAbsolutePath().toString(),
-								path.toAbsolutePath().toString()
-										.replace(ADD_FILE_CRYPT_XOOL, ""));
-						metric.setTotalSize(metric.getTotalSize()
-								+ Files.size(path));
+						decryptFile(path.toAbsolutePath().toString(),
+								path.toAbsolutePath().toString().replace(ADD_FILE_CRYPT_XOOL, ""));
+						metric.setTotalSize(metric.getTotalSize() + Files.size(path));
 						if (TypeProjet.DOSSIER.equals(typeProjet)) {
 							Files.delete(path);
 						}
@@ -160,16 +147,14 @@ public class XoolibeutDeCrypt {
 			throws IOException, GeneralSecurityException, RSAException {
 		// LOGGER.info("size clé privé " + privateKey.getModulus().bitLength());
 		if (Files.size(Paths.get(inputFile)) <= maxSizeByteDecrypt) {
-			this.decryptLittleFile(Files.readAllBytes(Paths.get(inputFile)),
-					pathOutput);
+			this.decryptLittleFile(Files.readAllBytes(Paths.get(inputFile)), pathOutput);
 		} else {
 			File fileOuput = new File(pathOutput);
 			fileOuput.getParentFile().mkdirs();
 
 			FileOutputStream fos = new FileOutputStream(fileOuput);
 			byte[] input = new byte[maxSizeByteDecrypt];
-			FileInputStream fileInputStream = new FileInputStream(Paths.get(
-					inputFile).toFile());
+			FileInputStream fileInputStream = new FileInputStream(Paths.get(inputFile).toFile());
 			int nbRead = 0;
 			while ((nbRead = fileInputStream.read(input)) > 0) {
 				byte[] inputRead = new byte[nbRead];
@@ -197,8 +182,7 @@ public class XoolibeutDeCrypt {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	private void decryptLittleFile(byte[] input, String pathOutput)
-			throws IOException, GeneralSecurityException {
+	private void decryptLittleFile(byte[] input, String pathOutput) throws IOException, GeneralSecurityException {
 
 		writeToFile(pathOutput, cipher.doFinal(input));
 	}
@@ -247,14 +231,16 @@ public class XoolibeutDeCrypt {
 		private String password;
 		private String[] multiplPrivateKeyFiles;
 		private Metric metric = new Metric();
-		private int maxSizeByteDecrypt = 8000;
+		private int maxSizeByteDecrypt = 8016;
 
 		public Builder() {
 
 		}
 
 		public Builder(String privateKeyFiles) {
-			multiplPrivateKeyFiles = privateKeyFiles.split(";");
+			if (privateKeyFiles != null) {
+				multiplPrivateKeyFiles = privateKeyFiles.split(";");
+			}
 
 		}
 
@@ -277,11 +263,9 @@ public class XoolibeutDeCrypt {
 			predicate = new Predicate<Path>() {
 				@Override
 				public boolean test(Path path) {
-					metric.setCountAllFilInFolder(metric
-							.getCountAllFilInFolder() + 1);
+					metric.setCountAllFilInFolder(metric.getCountAllFilInFolder() + 1);
 					return path.toFile().isDirectory()
-							|| path.toAbsolutePath().toString()
-									.endsWith(ADD_FILE_CRYPT_XOOL);
+							|| path.toAbsolutePath().toString().endsWith(ADD_FILE_CRYPT_XOOL);
 				}
 
 			};
@@ -341,10 +325,7 @@ public class XoolibeutDeCrypt {
 					cipher.init(Cipher.DECRYPT_MODE, privateKey);
 					maxSizeByteDecrypt = privateKey.getModulus().bitLength() / 8;
 				} else {
-					 byte[] iv = new byte[cipher.getBlockSize()];
-					   AlgorithmParameterSpec spec = new IvParameterSpec(iv);
-					cipher.init(Cipher.DECRYPT_MODE,
-							new SecretKeySpec(password.getBytes(), "AES"),spec);
+					cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(password.getBytes(), "AES"));
 				}
 				if (this.predicate == null) {
 					this.predicate();
@@ -360,16 +341,13 @@ public class XoolibeutDeCrypt {
 				if (password == null) {
 					StringBuilder keyContent = new StringBuilder(2048);
 					for (String keyfile : multiplPrivateKeyFiles) {
-						keyContent.append(new String(Files.readAllBytes(Paths
-								.get(keyfile))));
+						keyContent.append(new String(Files.readAllBytes(Paths.get(keyfile))));
 					}
-					privateKey = RSAPrivateKeyUtility
-							.convertToRSAPrivateKey(keyContent.toString());
+					privateKey = RSAPrivateKeyUtility.convertToRSAPrivateKey(keyContent.toString());
 
 				} else {
 					privateKey = RSAPrivateKeyUtility
-							.convertToRSAPrivateKey(TransformKey.transformFile(
-									password, multiplPrivateKeyFiles));
+							.convertToRSAPrivateKey(TransformKey.transformFile(password, multiplPrivateKeyFiles));
 				}
 			} catch (IOException exception) {
 
