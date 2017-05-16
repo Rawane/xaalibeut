@@ -28,8 +28,7 @@ import com.xoolibeut.crypt.XoolibeutZipIn;
 import com.xoolibeut.crypt.XoolibeutZipOut;
 
 public class XoolibeutMain {
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(XoolibeutMain.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutMain.class);
 
 	public static void main(String[] args) {
 		XoolibeutZipIn zipIn = new XoolibeutZipIn();
@@ -57,39 +56,30 @@ public class XoolibeutMain {
 			// encrypter un dossier
 			if (line.hasOption("ed")) {
 				if (line.getOptionValue("asource") == null
-						|| (line.getOptionValue("bkey") == null && line
-								.getOptionValue("pass") == null)) {
+						|| (line.getOptionValue("bkey") == null && line.getOptionValue("pass") == null)) {
 					printCommandeEchec(args);
 				}
-				XoolibeutEnCrypt.builder(line.getOptionValue("bkey"))
-						.algo(line.getOptionValue("algo"))
-						.source(line.getOptionValue("asource"))
-						.type(TypeProjet.DOSSIER)
-						.withPass(line.getOptionValue("pass")).build()
-						.doFinal();
+				XoolibeutEnCrypt.builder(line.getOptionValue("bkey")).algo(line.getOptionValue("algo"))
+						.source(line.getOptionValue("asource")).type(TypeProjet.DOSSIER)
+						.withPass(line.getOptionValue("pass")).build().doFinal();
 
 			}
 			// decrypter un dossier
 			if (line.hasOption("dd")) {
 
 				if (line.getOptionValue("asource") == null
-						|| (line.getOptionValue("bkey") == null && line
-								.getOptionValue("pass") == null)) {
+						|| (line.getOptionValue("bkey") == null && line.getOptionValue("pass") == null)) {
 					printCommandeEchec(args);
 				}
 				// dezipper le fichier
 				if (line.hasOption("zo")) {
-					zipOut.unZipDirectory(line.getOptionValue("asource")
-							+ ".zip");
+					zipOut.unZipDirectory(line.getOptionValue("asource") + ".zip");
 					if (line.hasOption("z")) {
-						deleteFile(Paths.get(line.getOptionValue("asource")
-								+ ".zip"));
+						deleteFile(Paths.get(line.getOptionValue("asource") + ".zip"));
 					}
 				}
-				Builder builderDecrypt = XoolibeutDeCrypt
-						.builder(line.getOptionValue("bkey"))
-						.algo(line.getOptionValue("algo"))
-						.source(line.getOptionValue("asource"))
+				Builder builderDecrypt = XoolibeutDeCrypt.builder(line.getOptionValue("bkey"))
+						.algo(line.getOptionValue("algo")).source(line.getOptionValue("asource"))
 						.type(TypeProjet.DOSSIER);
 				if (line.getOptionValue("pass") != null) {
 					builderDecrypt.withPass(line.getOptionValue("pass"));
@@ -100,36 +90,27 @@ public class XoolibeutMain {
 			// encrypter un projet java
 			if (line.hasOption("ej")) {
 				if (line.getOptionValue("asource") == null
-						|| (line.getOptionValue("bkey") == null && line
-								.getOptionValue("pass") == null)) {
+						|| (line.getOptionValue("bkey") == null && line.getOptionValue("pass") == null)) {
 					printCommandeEchec(args);
 				}
 				// encrypt.encryptProjetJava(line.getOptionValue("asource"),
 				// line.getOptionValue("bkey"),
 				// line.getOptionValue("nocrypt").split(";"));
 
-				XoolibeutEnCrypt.builder(line.getOptionValue("bkey"))
-						.algo(line.getOptionValue("algo"))
-						.source(line.getOptionValue("asource"))
-						.noCrypt(line.getOptionValue("nocrypt"))
-						.type(TypeProjet.JAVA)
-						.withPass(line.getOptionValue("pass")).build()
-						.doFinal();
+				XoolibeutEnCrypt.builder(line.getOptionValue("bkey")).algo(line.getOptionValue("algo"))
+						.source(line.getOptionValue("asource")).noCrypt(line.getOptionValue("nocrypt"))
+						.type(TypeProjet.JAVA).withPass(line.getOptionValue("pass")).build().doFinal();
 
 			}
 			// decrypter un projet java
 			if (line.hasOption("dj")) {
 				if (line.getOptionValue("asource") == null
-						|| (line.getOptionValue("bkey") == null && line
-								.getOptionValue("pass") == null)) {
+						|| (line.getOptionValue("bkey") == null && line.getOptionValue("pass") == null)) {
 					printCommandeEchec(args);
 				}
 
-				Builder builderDecrypt = XoolibeutDeCrypt
-						.builder(line.getOptionValue("bkey"))
-						.algo(line.getOptionValue("algo"))
-						.source(line.getOptionValue("asource"))
-						.type(TypeProjet.JAVA);
+				Builder builderDecrypt = XoolibeutDeCrypt.builder(line.getOptionValue("bkey"))
+						.algo(line.getOptionValue("algo")).source(line.getOptionValue("asource")).type(TypeProjet.JAVA);
 				if (line.getOptionValue("pass") != null) {
 					builderDecrypt.withPass(line.getOptionValue("pass"));
 				}
@@ -149,20 +130,17 @@ public class XoolibeutMain {
 				if (line.getOptionValue("asource") == null) {
 					printCommandeEchec(args);
 				}
-				XoolibeutFiles.builder(line.getOptionValue("asource"))
-						.size(Long.parseLong(line.getOptionValue("dec")))
+				XoolibeutFiles.builder(line.getOptionValue("asource")).size(Long.parseLong(line.getOptionValue("dec")))
 						.atPrefix("part").build().arrangeFiles();
 
 			}
-			if (line.hasOption("pp")) {
-				if (line.getOptionValue("asource") == null
-						|| line.getOptionValue("pass") == null) {
+			if (line.hasOption("e")) {
+				if (line.getOptionValue("asource") == null || line.getOptionValue("pass") == null) {
 					printCommandeEchec(args);
 				}
 				XoolibeutFiles.builder(line.getOptionValue("asource"))
-						.size(Long.parseLong(line.getOptionValue("pCrypt")))
-						.atPrefix("part").pass(line.getOptionValue("pass"))
-						.build().doToffsAES();
+						.size(Long.parseLong(line.getOptionValue("pCrypt"))).atPrefix("part")
+						.pass(line.getOptionValue("pass")).build().doToffsAES();
 
 			}
 		} catch (Exception exception) {
@@ -176,76 +154,52 @@ public class XoolibeutMain {
 	 * @return
 	 */
 	private static Options configParameters() {
-		final Option rsaGenKeyOption = Option
-				.builder("r")
-				.longOpt("rsa")
-				.desc("Génération de clé privé et public, utiliser avec option -d et -s ")
+		final Option rsaGenKeyOption = Option.builder("r").longOpt("rsa")
+				.desc("Génération de clé privé et public, utiliser avec option -d et -s ").hasArg(false).required(false)
+				.build();
+		final Option encryptProjetJava = Option.builder("ej").longOpt("encpjava").desc("Crypter un projet java")
 				.hasArg(false).required(false).build();
-		final Option encryptProjetJava = Option.builder("ej")
-				.longOpt("encpjava").desc("Crypter un projet java")
-				.hasArg(false).required(false).build();
-		final Option decryptProjetJava = Option.builder("dj")
-				.longOpt("decpjava").desc("Decrypter un projet java")
+		final Option decryptProjetJava = Option.builder("dj").longOpt("decpjava").desc("Decrypter un projet java")
 				.hasArg(false).required(false).build();
 		final Option encryptDossier = Option.builder("ed").longOpt("encpdoss")
-				.desc("Crypter un dossier, utiliser avec -a   et -b ")
-				.hasArg(false).argName("encdoss").required(false).build();
-		final Option decryptDossier = Option.builder("dd").longOpt("decpdoss")
-				.desc("Decrypter un dossier").hasArg(false).required(false)
+				.desc("Crypter un dossier, utiliser avec -a   et -b ").hasArg(false).argName("encdoss").required(false)
 				.build();
-		final Option destOptionKey = Option
-				.builder("d")
-				.longOpt("dest")
-				.desc("Répertoire de destination de la paire de clés exemple -d=/home/user/key")
-				.argName("dest").hasArg(true).required(false).build();
-		final Option pathDossierOption = Option
-				.builder("a")
-				.longOpt("asource")
-				.desc("Répertoire à crypter ou decrypter exemple -a=/home/user/docs")
-				.argName("source").hasArg(true).required(false).build();
-		final Option keyFileOption = Option
-				.builder("b")
-				.longOpt("bkey")
+		final Option decryptDossier = Option.builder("dd").longOpt("decpdoss").desc("Decrypter un dossier")
+				.hasArg(false).required(false).build();
+		final Option destOptionKey = Option.builder("d").longOpt("dest")
+				.desc("Répertoire de destination de la paire de clés exemple -d=/home/user/key").argName("dest")
+				.hasArg(true).required(false).build();
+		final Option pathDossierOption = Option.builder("a").longOpt("asource")
+				.desc("Répertoire à crypter ou decrypter exemple -a=/home/user/docs").argName("source").hasArg(true)
+				.required(false).build();
+		final Option keyFileOption = Option.builder("b").longOpt("bkey")
 				.desc("Clés privé ou public format PEM exemple -b=/home/user/key/Key.pem,possible de diviser la privé en plusieurs fichiers séparé par ; ")
 				.argName("key").hasArg(true).required(false).build();
-		final Option zipInputFileOption = Option.builder("zi").longOpt("zipin")
-				.desc("zipper un repertoire").hasArg(false).required(false)
+		final Option zipInputFileOption = Option.builder("zi").longOpt("zipin").desc("zipper un repertoire")
+				.hasArg(false).required(false).build();
+		final Option zipOuputFileOption = Option.builder("zo").longOpt("zipouput").desc("dézipper un repertoire")
+				.hasArg(false).required(false).build();
+		final Option suppDossierFileOption = Option.builder("z").longOpt("supp")
+				.desc("supprime le repertoire après traitement, utiliser avec -a").hasArg(false).required(false)
 				.build();
-		final Option zipOuputFileOption = Option.builder("zo")
-				.longOpt("zipouput").desc("dézipper un repertoire")
-				.hasArg(false).required(false).build();
-		final Option suppDossierFileOption = Option
-				.builder("z")
-				.longOpt("supp")
-				.desc("supprime le repertoire après traitement, utiliser avec -a")
-				.hasArg(false).required(false).build();
-		final Option dossierNonCrypt = Option
-				.builder("n")
-				.longOpt("nocrypt")
-				.desc("choisir un ou plusieurs dossier à ne pas crypter suivi, utiliser avec -a")
-				.argName("nocrypt").hasArg(true).required(false).build();
-		final Option rsaSizeKeyAlgo = Option
-				.builder("s")
-				.longOpt("rsasize")
-				.desc("choisir la taille de la clé pour algo RSA 1024,2048 exemple -s=2048")
-				.argName("rsasize").hasArg(true).required(false).build();
-		final Option passwordOption = Option
-				.builder("p")
-				.longOpt("pass")
-				.desc("A renseigner que si vous avez modifié votre clé privé par souci de sécurité")
-				.argName("pass").hasArg(true).required(false).build();
+		final Option dossierNonCrypt = Option.builder("n").longOpt("nocrypt")
+				.desc("choisir un ou plusieurs dossier à ne pas crypter suivi, utiliser avec -a").argName("nocrypt")
+				.hasArg(true).required(false).build();
+		final Option rsaSizeKeyAlgo = Option.builder("s").longOpt("rsasize")
+				.desc("choisir la taille de la clé pour algo RSA 1024,2048 exemple -s=2048").argName("rsasize")
+				.hasArg(true).required(false).build();
+		final Option passwordOption = Option.builder("p").longOpt("pass")
+				.desc("A renseigner que si vous avez modifié votre clé privé par souci de sécurité").argName("pass")
+				.hasArg(true).required(false).build();
 		final Option algoOption = Option.builder("al").longOpt("algo")
-				.desc("Algo à renseigner pour preciser RSA ou AES")
-				.argName("algo").hasArg(true).required(false).build();
-		final Option decomposeOption = Option
-				.builder("dec")
-				.longOpt("decomp")
+				.desc("Algo à renseigner pour preciser RSA ou AES").argName("algo").hasArg(true).required(false)
+				.build();
+		final Option decomposeOption = Option.builder("dec").longOpt("decomp")
 				.desc("decompose un répertoire en sous repertoire si la taille dépasse l'argument en paramètre")
 				.argName("dec").hasArg(true).required(false).build();
 
-		final Option cyptPhotoOption = Option.builder("pp").longOpt("pCrypt")
-				.desc("Décompose puis crypt photo").argName("pCrypt")
-				.hasArg(true).required(false).build();
+		final Option cyptPhotoOption = Option.builder("e").longOpt("pCrypt").desc("Décompose puis crypt photo")
+				.argName("pCrypt").hasArg(true).required(false).build();
 
 		final Options options = new Options();
 		options.addOption(cyptPhotoOption);
@@ -276,8 +230,7 @@ public class XoolibeutMain {
 	 * @throws ParseException
 	 */
 	private static void printHelp(String[] args) throws ParseException {
-		final Option helpFileOption = Option.builder("h").longOpt("help")
-				.desc("Affiche le message d'aide").build();
+		final Option helpFileOption = Option.builder("h").longOpt("help").desc("Affiche le message d'aide").build();
 		final Options firstOptions = new Options();
 		firstOptions.addOption(helpFileOption);
 		// On parse l'aide
@@ -304,15 +257,13 @@ public class XoolibeutMain {
 		try {
 			Files.walkFileTree(directoryFile, new SimpleFileVisitor<Path>() {
 				@Override
-				public FileVisitResult visitFile(Path file,
-						BasicFileAttributes attrs) throws IOException {
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					Files.deleteIfExists(file);
 					return FileVisitResult.CONTINUE;
 				}
 
 				@Override
-				public FileVisitResult postVisitDirectory(Path dir,
-						IOException exc) throws IOException {
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 					Files.delete(dir);
 					return FileVisitResult.CONTINUE;
 				}

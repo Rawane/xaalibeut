@@ -23,16 +23,15 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class XoolibeutFiles {
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(XoolibeutFiles.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(XoolibeutFiles.class);
 	private String repSource;
 	private long sizeSousRep;
 	private String prefixRepertoire;
 	private String pass;
 
 	/**
- * 
- */
+	* 
+	*/
 	public XoolibeutFiles(Builder builder) {
 		this.repSource = builder.repSource;
 		this.sizeSousRep = builder.size;
@@ -56,11 +55,13 @@ public class XoolibeutFiles {
 	public void arrangeFiles(String fileName) throws IOException {
 		LOGGER.info("arrange le répertoire " + fileName);
 		Path path = Paths.get(fileName);
+		if (path.toString().contains(prefixRepertoire)) {
+			return;
+		}
 		final List<Path> childDirectories = new ArrayList<Path>();
 		final List<Path> files = new ArrayList<Path>();
 		if (path.toFile().isDirectory()) {
-			LOGGER.info("arrange le répertoire taille fichier  "
-					+ Files.size(path) + " Octet");
+			LOGGER.info("arrange le répertoire taille fichier  " + Files.size(path) + " Octet");
 			// if (Files.size(path) > sizeSousRep) {
 
 			Consumer<Path> action = new Consumer<Path>() {
@@ -95,35 +96,25 @@ public class XoolibeutFiles {
 	 * @param files
 	 * @throws IOException
 	 */
-	private void createChildDirectoryIsNecessary(List<Path> files)
-			throws IOException {
+	private void createChildDirectoryIsNecessary(List<Path> files) throws IOException {
 		long sizeCalc = 0;
 		int index = 1;
 		List<Path> filesChildDirect = new ArrayList<>();
 		for (Path path : files) {
-			LOGGER.info("arrange le répertoire " + path.getFileName()
-					+ " size fichier " + Files.size(path) + " size calculé "
-					+ sizeCalc);
+			LOGGER.info("arrange le répertoire " + path.getFileName() + " size fichier " + Files.size(path)
+					+ " size calculé " + sizeCalc);
 			if (Files.size(path) >= sizeSousRep) {
-				Path pathChildDir = Files.createDirectory(Paths.get(path
-						.getParent().toAbsolutePath()
-						+ File.separator
-						+ prefixRepertoire + index++));
-				Files.move(
-						path,
-						Paths.get(pathChildDir.toAbsolutePath().toString()
-								+ File.separator + path.getFileName()));
+				Path pathChildDir = Files.createDirectory(
+						Paths.get(path.getParent().toAbsolutePath() + File.separator + prefixRepertoire + index++));
+				Files.move(path,
+						Paths.get(pathChildDir.toAbsolutePath().toString() + File.separator + path.getFileName()));
 			} else {
 				if (sizeCalc >= sizeSousRep) {
-					Path pathChildDir = Files.createDirectory(Paths.get(path
-							.getParent().toAbsolutePath()
-							+ File.separator
-							+ prefixRepertoire + index++));
+					Path pathChildDir = Files.createDirectory(
+							Paths.get(path.getParent().toAbsolutePath() + File.separator + prefixRepertoire + index++));
 					for (Path pathFile : filesChildDirect) {
-						Files.move(pathFile, Paths.get(pathChildDir
-								.toAbsolutePath().toString()
-								+ File.separator
-								+ pathFile.getFileName()));
+						Files.move(pathFile, Paths.get(
+								pathChildDir.toAbsolutePath().toString() + File.separator + pathFile.getFileName()));
 					}
 					filesChildDirect = new ArrayList<>();
 					filesChildDirect.add(path);
@@ -135,14 +126,11 @@ public class XoolibeutFiles {
 			}
 		}
 		if (!filesChildDirect.isEmpty()) {
-			Path pathChildDir = Files.createDirectory(Paths
-					.get(filesChildDirect.get(0).getParent().toAbsolutePath()
-							+ File.separator + prefixRepertoire + index));
+			Path pathChildDir = Files.createDirectory(Paths.get(
+					filesChildDirect.get(0).getParent().toAbsolutePath() + File.separator + prefixRepertoire + index));
 			for (Path pathFile : filesChildDirect) {
-				Files.move(
-						pathFile,
-						Paths.get(pathChildDir.toAbsolutePath().toString()
-								+ File.separator + pathFile.getFileName()));
+				Files.move(pathFile,
+						Paths.get(pathChildDir.toAbsolutePath().toString() + File.separator + pathFile.getFileName()));
 			}
 		}
 
@@ -159,8 +147,7 @@ public class XoolibeutFiles {
 			// + Paths.get(
 			// "D:\\devs\\test\\ManagementController.java.xool")
 			// .getFileName()));
-		 XoolibeutFiles.builder("D:\\devs\\test").size(5 * 1024 * 1024)
-			.atPrefix("part").build().arrangeFiles();
+			XoolibeutFiles.builder("D:\\devs\\test").size(5 * 1024 * 1024).atPrefix("part").build().arrangeFiles();
 			// List<Path> list =
 			// XoolibeutFiles.doPhotos(Paths.get("D:\\devs\\test"));
 			// System.out.println(list);
@@ -179,15 +166,13 @@ public class XoolibeutFiles {
 			this.arrangeFiles();
 			Files.walkFileTree(directoryFile, new SimpleFileVisitor<Path>() {
 				@Override
-				public FileVisitResult visitFile(Path file,
-						BasicFileAttributes attrs) throws IOException {
-					//					
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					//
 					return FileVisitResult.SKIP_SIBLINGS;
 				}
 
 				@Override
-				public FileVisitResult postVisitDirectory(Path dir,
-						IOException exc) throws IOException {
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 					if (!directoryFile.equals(dir)) {
 						listPaths.add(dir);
 					}
@@ -195,10 +180,8 @@ public class XoolibeutFiles {
 				}
 			});
 			for (Path pathD : listPaths) {
-				XoolibeutEnCrypt.builder().algoAES()
-						.source(pathD.toAbsolutePath().toString())
-						.type(TypeProjet.DOSSIER).withPass(pass).build()
-						.doFinal();
+				XoolibeutEnCrypt.builder().algoAES().source(pathD.toAbsolutePath().toString()).type(TypeProjet.DOSSIER)
+						.withPass(pass).build().doFinal();
 			}
 		} catch (IOException ioException) {
 			LOGGER.error("suppression fichier", ioException);
@@ -223,7 +206,7 @@ public class XoolibeutFiles {
 
 	public static final class Builder {
 		private String repSource;
-		private long size=300*1024*1024;
+		private long size = 300 * 1024 * 1024;
 		private String prefix;
 		private String password;
 
@@ -252,8 +235,8 @@ public class XoolibeutFiles {
 		}
 
 		/**
-	 * 
-	 */
+		* 
+		*/
 		public Builder() {
 
 		}
