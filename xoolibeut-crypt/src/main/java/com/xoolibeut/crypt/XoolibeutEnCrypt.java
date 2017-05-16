@@ -224,7 +224,9 @@ public class XoolibeutEnCrypt {
 	public static Builder builder(final String key) {
 		return new Builder(key);
 	}
-
+	public static Builder builder() {
+		return new Builder();
+	}
 	/**
 	 * Classe Builder.
 	 * 

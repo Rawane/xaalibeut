@@ -5,9 +5,12 @@ package com.xoolibeut.crypt;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -25,6 +28,7 @@ public class XoolibeutFiles {
 	private String repSource;
 	private long sizeSousRep;
 	private String prefixRepertoire;
+	private String pass;
 
 	/**
  * 
@@ -33,6 +37,7 @@ public class XoolibeutFiles {
 		this.repSource = builder.repSource;
 		this.sizeSousRep = builder.size;
 		this.prefixRepertoire = builder.prefix;
+		this.pass = builder.password;
 	}
 
 	public static Builder builder(final String source) {
@@ -82,7 +87,6 @@ public class XoolibeutFiles {
 
 	public void arrangeFiles() throws IOException {
 		arrangeFiles(this.repSource);
-
 	}
 
 	/**
@@ -155,13 +159,51 @@ public class XoolibeutFiles {
 			// + Paths.get(
 			// "D:\\devs\\test\\ManagementController.java.xool")
 			// .getFileName()));
-			XoolibeutFiles.builder("D:\\devs\\test").size(5 * 1024 * 1024)
-					.atPrefix("part").build().arrangeFiles();
+		 XoolibeutFiles.builder("D:\\devs\\test").size(5 * 1024 * 1024)
+			.atPrefix("part").build().arrangeFiles();
+			// List<Path> list =
+			// XoolibeutFiles.doPhotos(Paths.get("D:\\devs\\test"));
+			// System.out.println(list);
+			// System.out.println(list.size());
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
+	}
+
+	public void doToffsAES() {
+		try {
+			final Path directoryFile = Paths.get(repSource);
+			final List<Path> listPaths = new ArrayList<>();
+			this.arrangeFiles();
+			Files.walkFileTree(directoryFile, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file,
+						BasicFileAttributes attrs) throws IOException {
+					//					
+					return FileVisitResult.SKIP_SIBLINGS;
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir,
+						IOException exc) throws IOException {
+					if (!directoryFile.equals(dir)) {
+						listPaths.add(dir);
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+			for (Path pathD : listPaths) {
+				XoolibeutEnCrypt.builder().algoAES()
+						.source(pathD.toAbsolutePath().toString())
+						.type(TypeProjet.DOSSIER).withPass(pass).build()
+						.doFinal();
+			}
+		} catch (IOException ioException) {
+			LOGGER.error("suppression fichier", ioException);
+		}
+
 	}
 
 	/**
@@ -181,8 +223,9 @@ public class XoolibeutFiles {
 
 	public static final class Builder {
 		private String repSource;
-		private long size;
+		private long size=300*1024*1024;
 		private String prefix;
+		private String password;
 
 		public Builder source(String repertoire) {
 			this.repSource = repertoire;
@@ -196,6 +239,11 @@ public class XoolibeutFiles {
 
 		public Builder atPrefix(String prefix) {
 			this.prefix = prefix;
+			return this;
+		}
+
+		public Builder pass(String pass) {
+			this.password = pass;
 			return this;
 		}
 
