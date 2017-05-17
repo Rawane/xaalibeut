@@ -131,6 +131,7 @@ public class XoolibeutFiles {
 			for (Path pathFile : filesChildDirect) {
 				Files.move(pathFile,
 						Paths.get(pathChildDir.toAbsolutePath().toString() + File.separator + pathFile.getFileName()));
+
 			}
 		}
 
@@ -164,6 +165,7 @@ public class XoolibeutFiles {
 			final Path directoryFile = Paths.get(repSource);
 			final List<Path> listPaths = new ArrayList<>();
 			this.arrangeFiles();
+			XoolibeutZipIn xoolZip = new XoolibeutZipIn();
 			Files.walkFileTree(directoryFile, new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -182,6 +184,13 @@ public class XoolibeutFiles {
 			for (Path pathD : listPaths) {
 				XoolibeutEnCrypt.builder().algoAES().source(pathD.toAbsolutePath().toString()).type(TypeProjet.DOSSIER)
 						.withPass(pass).build().doFinal();
+
+			}
+			for (Path pathD : listPaths) {
+				if (pathD.toString().contains(prefixRepertoire) && !pathD.endsWith(".zip")) {
+					xoolZip.zipDirectory(pathD.toAbsolutePath().toString());
+				}
+
 			}
 		} catch (IOException ioException) {
 			LOGGER.error("suppression fichier", ioException);
