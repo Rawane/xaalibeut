@@ -121,6 +121,10 @@ public class XoolibeutDeCrypt {
 						metric.setTotalSize(metric.getTotalSize() + Files.size(path));
 						if (TypeProjet.DOSSIER.equals(typeProjet)) {
 							Files.delete(path);
+						}else{
+							if (TypeProjet.JAVA.equals(typeProjet)) {
+								Files.delete(path);
+							}
 						}
 					}
 				} catch (Exception exception) {
